@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-Hans" data-lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="写给秋然 / For Claire — 四百多天 · Four Hundred Days" />
+    <meta name="theme-color" content="#f4d6d0" />
+    <title>写给秋然 · 四百多天 | For Claire</title>
+    <!--
+      Deploy note: all asset URLs below are relative, so the site works at
+      domain root (Cloudflare Pages / custom domain) OR under /for-claire/
+      (GitHub Pages project site). For photo paths in data/album.js, set
+      window.SITE_CONFIG.basePath in js/config.js if assets break in a subpath.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ma+Shan+Zheng&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <div class="brand">
+          <div id="brand-title" class="brand-title zh">写给秋然</div>
+          <div id="brand-sub" class="brand-sub zh">四百多天</div>
+        </div>
+        <div class="topbar-actions">
+          <nav id="nav-pills" class="nav-pills" aria-label="sections">
+            <button type="button" data-view="cover" class="active">封面</button>
+            <button type="button" data-view="story">我们的故事</button>
+            <button type="button" data-view="album">相册</button>
+          </nav>
+          <div class="lang-toggle" role="group" aria-label="language">
+            <button type="button" data-lang="zh" class="active">中文</button>
+            <button type="button" data-lang="en">EN</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Cover -->
+      <section id="view-cover" class="view cover active" data-view="cover" aria-label="cover"></section>
+
+      <!-- Our Story -->
+      <section id="view-story" class="view story" data-view="story" aria-label="story"></section>
+
+      <!-- Album -->
+      <section id="view-album" class="view album" data-view="album" aria-label="album">
+        <div id="chapter-header" class="chapter-header"></div>
+        <div id="book-stage" class="book-stage">
+          <div id="book-page" class="book-page" aria-live="polite"></div>
+        </div>
+        <p id="swipe-hint" class="swipe-hint"></p>
+      </section>
+
+      <footer id="site-footer" class="site-footer"></footer>
+    </div>
+
+    <!-- Album page controls (fixed) -->
+    <div id="album-controls" class="album-controls" style="display: none" aria-hidden="false">
+      <div class="album-controls-inner">
+        <button type="button" id="btn-prev" class="ctrl-btn" aria-label="Previous">‹</button>
+        <div id="page-indicator" class="page-indicator"></div>
+        <button type="button" id="btn-next" class="ctrl-btn" aria-label="Next">›</button>
+      </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox" aria-hidden="true" role="dialog" aria-modal="true">
+      <button type="button" id="lightbox-close" class="lightbox-close" aria-label="Close">×</button>
+      <div class="lightbox-inner">
+        <div id="lightbox-frame" class="lightbox-frame"></div>
+        <p id="lightbox-caption" class="lightbox-caption"></p>
+      </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="data/album.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
