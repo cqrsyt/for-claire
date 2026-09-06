@@ -20,3 +20,6 @@ Leave `src: ""` (or omit `src`) to keep the elegant empty placeholder frame.
 - Prefer landscape ~4:3 for the album frames.
 - Keep file sizes reasonable (e.g. under ~800KB) for mobile.
 - Paths are relative to the site root (`photos/...`), not absolute URLs.
+
+
+> Note: the first photos are currently embedded as data URIs in `data/album.js` for easy GitHub deploy. You can later switch `src` back to `photos/...` paths and keep the JPG files here.
