@@ -131,3 +131,15 @@ for-claire/
 
 以温柔，纪念四百多天。  
 With tenderness — for four hundred days and counting.
+
+
+---
+
+## Site password / 网站密码
+
+The album opens behind a password gate (`js/config.js` → `sitePasswordHash`).
+
+当前密码（私下发给秋然）：`0922claire`
+
+Browser keeps unlock in `sessionStorage` for the tab session.
+这是前端门禁，能挡住随手打开的人；源码里仍可能被有心人绕过。更强保护可在 Cloudflare 再加一层。
