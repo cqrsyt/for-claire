@@ -1,1 +1,1 @@
-window.ALBUM_EMBEDS=window.ALBUM_EMBEDS||[];window.ALBUM_EMBEDS[31]="PLACEHOLDER";
+file:///workspace/for-claire/data/embeds/e31.js
