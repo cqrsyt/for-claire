@@ -1,1 +1,1 @@
-$SHELL_OUTPUT:/tmp/e35_content_only.txt
+!include /tmp/e35_content_only.txt
