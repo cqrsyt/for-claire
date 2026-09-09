@@ -1,1 +1,1 @@
-file:///workspace/for-claire/data/embeds/e35.js
+$SHELL_OUTPUT:/tmp/e35_content_only.txt
