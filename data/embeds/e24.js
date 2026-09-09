@@ -1,1 +1,1 @@
-file:///tmp/parsed_e24.js
+@/tmp/only_content_e24
