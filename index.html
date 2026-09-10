@@ -18,10 +18,11 @@
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ma+Shan+Zheng&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=14" />
-    <link rel="stylesheet" href="css/polish.css?v=14" />
-    <link rel="stylesheet" href="css/motion.css?v=14" />
-    <link rel="stylesheet" href="css/keepsake.css?v=14" />
+    <link rel="stylesheet" href="css/styles.css?v=16" />
+    <link rel="stylesheet" href="css/polish.css?v=16" />
+    <link rel="stylesheet" href="css/motion.css?v=16" />
+    <link rel="stylesheet" href="css/keepsake.css?v=16" />
+    <link rel="stylesheet" href="css/book3d.css?v=16" />
   </head>
   <body class="locked">
     <div id="password-gate" class="password-gate" aria-hidden="false">
@@ -97,8 +98,33 @@
       <section id="view-album" class="view album" data-view="album" aria-label="album">
         <div id="chapter-header" class="chapter-header"></div>
         <div id="book-stage" class="book-stage">
-          <div id="book-page" class="book-page" aria-live="polite"></div>
+          <div class="book-sketches" aria-hidden="true">
+            <div class="book-sketch book-sketch--rose">
+              <img src="img/sketches/rose-wellcome.jpg" alt="" />
+            </div>
+            <div class="book-sketch book-sketch--couple">
+              <img src="img/sketches/couple-line.svg" alt="" />
+            </div>
+            <div class="book-sketch book-sketch--hands">
+              <img src="img/sketches/hands-heart.svg" alt="" />
+            </div>
+          </div>
+          <div class="book-3d" id="book-3d">
+            <div class="book-3d-cover" aria-hidden="true">
+              <img src="img/sketches/couple-1908.jpg" alt="" />
+              <p class="book-3d-cover-title zh">写给秋然</p>
+            </div>
+            <div class="book-3d-spine" aria-hidden="true"></div>
+            <div class="book-3d-block">
+              <div class="book-3d-thickness"></div>
+              <div id="book-page" class="book-page" aria-live="polite"></div>
+              <div class="book-3d-foreedge"></div>
+            </div>
+          </div>
         </div>
+        <p class="sketch-credit">
+          左页素描：1908 年明信片（公有领域）· 玫瑰铅笔稿：Wellcome Collection（Public Domain Mark）
+        </p>
         <p id="swipe-hint" class="swipe-hint"></p>
       </section>
 
@@ -128,6 +154,14 @@
     </div>
     <div id="claire-toast" class="claire-toast" hidden></div>
 
+    <div id="birthday-egg" class="birthday-egg" hidden role="dialog" aria-label="生日快乐">
+      <div class="birthday-egg-hearts" aria-hidden="true"></div>
+      <div class="birthday-egg-card">
+        <p class="birthday-egg-text zh">生日快乐</p>
+        <p class="birthday-egg-sub zh">大宝，第九页走到第二十二页</p>
+      </div>
+    </div>
+
     <!-- Lightbox -->
     <div id="lightbox" class="lightbox" aria-hidden="true" role="dialog" aria-modal="true">
       <button type="button" id="lightbox-close" class="lightbox-close" aria-label="Close">×</button>
@@ -138,9 +172,9 @@
     </div>
 
     <script src="js/config.js"></script>
-    <script src="data/album.js?v=14"></script>
-    <script src="js/app.js?v=14"></script>
-    <script src="js/petals.js?v=14"></script>
-    <script src="js/keepsake.js?v=14"></script>
+    <script src="data/album.js?v=16"></script>
+    <script src="js/app.js?v=16"></script>
+    <script src="js/petals.js?v=16"></script>
+    <script src="js/keepsake.js?v=16"></script>
   </body>
 </html>

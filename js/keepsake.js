@@ -186,6 +186,182 @@
     }
   }
 
+  function dressCover() {
+    var view = document.getElementById("view-cover");
+    var frame = view && view.querySelector(".cover-frame");
+    if (!frame) return;
+    if (!frame.closest(".cover-book-3d")) {
+      var wrap = document.createElement("div");
+      wrap.className = "cover-book-3d";
+      var spine = document.createElement("div");
+      spine.className = "cover-book-spine";
+      spine.setAttribute("aria-hidden", "true");
+      var pages = document.createElement("div");
+      pages.className = "cover-book-pages";
+      pages.setAttribute("aria-hidden", "true");
+      frame.parentNode.insertBefore(wrap, frame);
+      wrap.appendChild(spine);
+      wrap.appendChild(frame);
+      wrap.appendChild(pages);
+    }
+    if (!frame.querySelector(".cover-sketch")) {
+      var sketch = document.createElement("div");
+      sketch.className = "cover-sketch";
+      sketch.setAttribute("aria-hidden", "true");
+      frame.insertBefore(sketch, frame.firstChild);
+    }
+  }
+
+  function watchCover() {
+    var view = document.getElementById("view-cover");
+    if (!view || view._coverWatch) return;
+    view._coverWatch = true;
+    dressCover();
+    var mo = new MutationObserver(function () {
+      dressCover();
+    });
+    mo.observe(view, { childList: true, subtree: true });
+  }
+
+  function bindBookTilt() {
+    var stage = document.getElementById("book-stage");
+    var book = document.getElementById("book-3d");
+    if (!stage || !book) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.matchMedia("(pointer: coarse)").matches) return;
+    stage.addEventListener("mousemove", function (e) {
+      var r = stage.getBoundingClientRect();
+      var x = (e.clientX - r.left) / r.width - 0.5;
+      var y = (e.clientY - r.top) / r.height - 0.5;
+      book.classList.add("is-tilting");
+      book.style.transform =
+        "rotateX(" + (8 - y * 7) + "deg) rotateY(" + (x * 10 - 5) + "deg)";
+    });
+    stage.addEventListener("mouseleave", function () {
+      book.classList.remove("is-tilting");
+      book.style.transform = "";
+    });
+  }
+
+  var eggSeenNine = false;
+  var eggFired = false;
+
+  function eggLang() {
+    var text = document.querySelector(".birthday-egg-text");
+    var sub = document.querySelector(".birthday-egg-sub");
+    var credit = document.querySelector(".sketch-credit");
+    var coverTitle = document.querySelector(".book-3d-cover-title");
+    if (zh()) {
+      if (text) text.textContent = "生日快乐";
+      if (sub) sub.textContent = "大宝，第九页走到第二十二页";
+      if (credit) credit.textContent = "左页素描：1908 年明信片（公有领域）· 玫瑰铅笔稿：Wellcome Collection（Public Domain Mark）";
+      if (coverTitle) coverTitle.textContent = "写给秋然";
+    } else {
+      if (text) text.textContent = "Happy Birthday";
+      if (sub) sub.textContent = "Da Bao — page nine, then twenty-two";
+      if (credit) credit.textContent = "Left sketch: 1908 postcard (public domain) · Rose pencil drawing: Wellcome Collection (Public Domain Mark)";
+      if (coverTitle) coverTitle.textContent = "For Claire";
+    }
+  }
+
+  function closeEgg() {
+    var egg = document.getElementById("birthday-egg");
+    if (!egg) return;
+    egg.hidden = true;
+    var hearts = egg.querySelector(".birthday-egg-hearts");
+    if (hearts) hearts.innerHTML = "";
+  }
+
+  function spawnEggHearts() {
+    var root = document.querySelector(".birthday-egg-hearts");
+    if (!root) return;
+    root.innerHTML = "";
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+    var glyphs = ["♥", "♡", "💕", "💗", "💙"];
+    for (var i = 0; i < 28; i++) {
+      var h = document.createElement("span");
+      h.className = "egg-heart";
+      h.textContent = glyphs[i % glyphs.length];
+      h.style.setProperty("--x", 4 + Math.random() * 92 + "%");
+      h.style.setProperty("--dx", Math.random() * 80 - 40 + "px");
+      h.style.setProperty("--s", 0.9 + Math.random() * 1.4 + "rem");
+      h.style.setProperty("--d", 3.2 + Math.random() * 2.8 + "s");
+      h.style.animationDelay = Math.random() * 1.4 + "s";
+      root.appendChild(h);
+    }
+  }
+
+  function fireEgg() {
+    if (eggFired) return;
+    try {
+      if (sessionStorage.getItem("claire-egg-922") === "1") return;
+    } catch (e) {}
+    eggFired = true;
+    try {
+      sessionStorage.setItem("claire-egg-922", "1");
+    } catch (e2) {}
+    var egg = document.getElementById("birthday-egg");
+    if (!egg) return;
+    eggLang();
+    spawnEggHearts();
+    egg.hidden = false;
+    burst("♥", 18);
+    burst("💙", 10);
+    clearTimeout(fireEgg._t);
+    fireEgg._t = window.setTimeout(closeEgg, 6800);
+  }
+
+  function noteAlbumPage() {
+    var api = album();
+    if (!api) return;
+    var display = api.page() + 1;
+    if (display === 9) eggSeenNine = true;
+    if (display === 22 && eggSeenNine) fireEgg();
+  }
+
+  function bindEasterEgg() {
+    var indicator = document.getElementById("page-indicator");
+    if (indicator && !indicator._eggWatch) {
+      indicator._eggWatch = true;
+      var mo = new MutationObserver(noteAlbumPage);
+      mo.observe(indicator, { childList: true, characterData: true, subtree: true });
+    }
+    var egg = document.getElementById("birthday-egg");
+    if (egg && !egg._bound) {
+      egg._bound = true;
+      egg.addEventListener("click", closeEgg);
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closeEgg();
+      });
+    }
+    ready(function () {
+      var api = album();
+      if (!api || api._eggBound) {
+        noteAlbumPage();
+        return;
+      }
+      api._eggBound = true;
+      var go = api.go;
+      var next = api.next;
+      var prev = api.prev;
+      api.go = function (idx, dir) {
+        go.call(api, idx, dir);
+        noteAlbumPage();
+      };
+      api.next = function () {
+        next.call(api);
+        noteAlbumPage();
+      };
+      api.prev = function () {
+        prev.call(api);
+        noteAlbumPage();
+      };
+      noteAlbumPage();
+    });
+  }
+
   function syncDrawerLang() {
     var data = window.ALBUM_DATA;
     if (!data) return;
@@ -219,7 +395,12 @@
 
   document.addEventListener("click", function (e) {
     var langBtn = e.target.closest && e.target.closest("[data-lang]");
-    if (langBtn) window.setTimeout(syncDrawerLang, 30);
+    if (langBtn) {
+      window.setTimeout(function () {
+        syncDrawerLang();
+        eggLang();
+      }, 30);
+    }
   });
 
   if (document.readyState === "loading") {
@@ -234,6 +415,10 @@
     sprinklePaws();
     fillDrawer();
     syncDrawerLang();
+    eggLang();
+    watchCover();
+    bindBookTilt();
+    bindEasterEgg();
     ready(function () {});
   }
 })();
