@@ -75,6 +75,15 @@ body.claire-blue {
   50% { transform: rotate(8deg); }
 }
 
+.masthead-icon--maple {
+  font-size: 1.15rem;
+  animation: mapleSway 3.8s ease-in-out infinite;
+}
+@keyframes mapleSway {
+  0%, 100% { transform: rotate(-12deg) translateY(0); }
+  50% { transform: rotate(10deg) translateY(-3px); }
+}
+
 .masthead-icon--dog svg {
   display: block;
   animation: dogBob 2.8s ease-in-out infinite;
@@ -375,6 +384,7 @@ body.claire-blue {
   .masthead-lace,
   .masthead-icon--dog svg,
   .masthead-icon--plush,
+  .masthead-icon--maple,
   .password-motifs,
   .burst-bit,
   .paw-print,

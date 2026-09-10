@@ -12,6 +12,7 @@
     berry: { glyph: "🫐", zh: "蓝蓝的一颗，像你喜欢的颜色。", en: "A little blue berry — like the color you love." },
     dog: { glyph: "🐶", zh: "汪。我们自己也是狗狗。金毛路过，摇了摇尾巴。", en: "Woof. We are puppies too. A golden retriever passed by, tail wagging." },
     plush: { glyph: "🧸", zh: "给大宝抱一只。", en: "A plush one, for Da Bao to hold." },
+    maple: { glyph: "🍁", zh: "枫叶落下来。秋天到了，大宝。", en: "Maple leaves falling. Autumn is here, Da Bao." },
     blue: { glyph: "💙", zh: "大宝喜欢的蓝。我把天光再调亮了一点。", en: "The blue Da Bao likes. I let a little more of it in." }
   };
 
@@ -124,7 +125,7 @@
         var key = btn.getAttribute("data-like");
         var item = LIKES[key];
         if (!item) return;
-        burst(item.glyph, key === "dog" ? 10 : 16);
+        burst(item.glyph, key === "dog" ? 10 : key === "maple" ? 18 : 16);
         toast(zh() ? item.zh : item.en);
         if (key === "blue") {
           document.body.classList.toggle("claire-blue");
@@ -204,6 +205,14 @@
       wrap.appendChild(frame);
       wrap.appendChild(pages);
     }
+    var wrapEl = frame.closest(".cover-book-3d");
+    if (wrapEl && !wrapEl.querySelector(".cover-book-leaf")) {
+      var leaf = document.createElement("div");
+      leaf.className = "cover-book-leaf";
+      leaf.setAttribute("aria-hidden", "true");
+      leaf.setAttribute("data-label", zh() ? "我们的故事" : "Our Story");
+      wrapEl.insertBefore(leaf, frame);
+    }
     if (!frame.querySelector(".cover-sketch")) {
       var sketch = document.createElement("div");
       sketch.className = "cover-sketch";
@@ -221,6 +230,108 @@
       dressCover();
     });
     mo.observe(view, { childList: true, subtree: true });
+  }
+
+  var coverOpening = false;
+
+  function spawnInk(veil, x, y) {
+    veil.innerHTML = "";
+    var wash = document.createElement("div");
+    wash.className = "ink-wash";
+    wash.style.setProperty("--ix", x + "%");
+    wash.style.setProperty("--iy", y + "%");
+    veil.appendChild(wash);
+    var i;
+    for (i = 0; i < 9; i++) {
+      var blot = document.createElement("span");
+      blot.className = "ink-blot";
+      blot.style.setProperty("--x", x + (Math.random() * 18 - 9) + "%");
+      blot.style.setProperty("--y", y + (Math.random() * 16 - 8) + "%");
+      blot.style.setProperty("--s", 110 + Math.random() * 160 + "px");
+      blot.style.setProperty("--d", 1.55 + Math.random() * 0.7 + "s");
+      blot.style.setProperty("--delay", Math.random() * 0.28 + "s");
+      blot.style.setProperty("--sc", 5.2 + Math.random() * 3.4);
+      blot.style.setProperty("--dy", Math.random() * 36 - 18 + "px");
+      veil.appendChild(blot);
+    }
+    for (i = 0; i < 22; i++) {
+      var speck = document.createElement("span");
+      speck.className = "ink-speck";
+      speck.style.setProperty("--x", x + (Math.random() * 36 - 18) + "%");
+      speck.style.setProperty("--y", y + (Math.random() * 28 - 14) + "%");
+      speck.style.setProperty("--s", 5 + Math.random() * 12 + "px");
+      speck.style.setProperty("--delay", Math.random() * 0.45 + "s");
+      speck.style.setProperty("--dx", Math.random() * 90 - 45 + "px");
+      speck.style.setProperty("--dy", -20 - Math.random() * 70 + "px");
+      veil.appendChild(speck);
+    }
+  }
+
+  function playCoverReveal(evt) {
+    var api = album();
+    if (!api) return;
+    if (coverOpening) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      api.open("story");
+      return;
+    }
+    coverOpening = true;
+    var book = document.querySelector(".cover-book-3d");
+    var frame = book && book.querySelector(".cover-frame");
+    var veil = document.getElementById("ink-veil");
+    var x = 50;
+    var y = 58;
+    if (evt && typeof evt.clientX === "number") {
+      x = (evt.clientX / Math.max(window.innerWidth, 1)) * 100;
+      y = (evt.clientY / Math.max(window.innerHeight, 1)) * 100;
+    }
+    if (frame) {
+      frame.style.animation = "none";
+      frame.style.transition = "none";
+      frame.style.transform = "rotateY(0deg)";
+      void frame.offsetWidth;
+    }
+    if (book) book.classList.add("is-opening");
+    if (frame) {
+      frame.style.transition = "transform 1.8s cubic-bezier(0.42, 0.02, 0.18, 1)";
+      frame.style.transform = "rotateY(-168deg)";
+    }
+    if (veil) {
+      spawnInk(veil, x, y);
+      veil.hidden = false;
+    }
+    window.setTimeout(function () {
+      api.open("story");
+    }, 1520);
+    window.setTimeout(function () {
+      if (veil) {
+        veil.hidden = true;
+        veil.innerHTML = "";
+      }
+      if (book) book.classList.remove("is-opening");
+      if (frame) {
+        frame.style.animation = "";
+        frame.style.transition = "";
+        frame.style.transform = "";
+      }
+      coverOpening = false;
+    }, 2550);
+  }
+
+  function bindCoverOpen() {
+    if (document._coverOpenBound) return;
+    document._coverOpenBound = true;
+    document.addEventListener(
+      "click",
+      function (e) {
+        var btn = e.target.closest && e.target.closest("[data-action=open-story]");
+        if (!btn) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        playCoverReveal(e);
+      },
+      true
+    );
   }
 
   function bindBookTilt() {
@@ -251,16 +362,19 @@
     var sub = document.querySelector(".birthday-egg-sub");
     var credit = document.querySelector(".sketch-credit");
     var coverTitle = document.querySelector(".book-3d-cover-title");
+    var leaf = document.querySelector(".cover-book-leaf");
     if (zh()) {
       if (text) text.textContent = "生日快乐";
       if (sub) sub.textContent = "大宝，第九页走到第二十二页";
       if (credit) credit.textContent = "左页素描：1908 年明信片（公有领域）· 玫瑰铅笔稿：Wellcome Collection（Public Domain Mark）";
       if (coverTitle) coverTitle.textContent = "写给秋然";
+      if (leaf) leaf.setAttribute("data-label", "我们的故事");
     } else {
       if (text) text.textContent = "Happy Birthday";
       if (sub) sub.textContent = "Da Bao — page nine, then twenty-two";
       if (credit) credit.textContent = "Left sketch: 1908 postcard (public domain) · Rose pencil drawing: Wellcome Collection (Public Domain Mark)";
       if (coverTitle) coverTitle.textContent = "For Claire";
+      if (leaf) leaf.setAttribute("data-label", "Our Story");
     }
   }
 
@@ -313,10 +427,52 @@
     fireEgg._t = window.setTimeout(closeEgg, 6800);
   }
 
+  var lastAlbumPage = -1;
+
+  function spawnMapleFlip(dir) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var root = document.getElementById("ambient-petals");
+    if (!root) return;
+    var sign = dir === "prev" ? -1 : 1;
+    var n = 10;
+    for (var i = 0; i < n; i++) {
+      var leaf = document.createElement("span");
+      leaf.className = "maple-leaf maple-leaf--flip maple-leaf--" + (i % 4);
+      leaf.style.left = (sign > 0 ? 46 : 28) + Math.random() * 26 + "%";
+      leaf.style.top = 22 + Math.random() * 42 + "%";
+      leaf.style.setProperty("--dx", sign * (70 + Math.random() * 160) + "px");
+      leaf.style.setProperty("--dy", 40 + Math.random() * 90 + "px");
+      leaf.style.setProperty("--rot", (Math.random() * 480 - 240) + "deg");
+      leaf.style.animationDuration = 1.15 + Math.random() * 0.75 + "s";
+      leaf.style.animationDelay = Math.random() * 0.18 + "s";
+      root.appendChild(leaf);
+      window.setTimeout(function (node) {
+        node.remove();
+      }, 2100, leaf);
+    }
+  }
+
   function noteAlbumPage() {
     var api = album();
     if (!api) return;
     var display = api.page() + 1;
+    if (lastAlbumPage !== -1 && lastAlbumPage !== display) {
+      var dir = display > lastAlbumPage ? "next" : "prev";
+      spawnMapleFlip(dir);
+      var book = document.getElementById("book-3d");
+      if (book) {
+        book.classList.remove("is-flipping-next", "is-flipping-prev");
+        void book.offsetWidth;
+        book.classList.add(dir === "next" ? "is-flipping-next" : "is-flipping-prev");
+        window.clearTimeout(book._flipT);
+        book._flipT = window.setTimeout(function () {
+          book.classList.remove("is-flipping-next", "is-flipping-prev");
+          var pageEl = document.getElementById("book-page");
+          if (pageEl) pageEl.classList.remove("flip-next", "flip-prev");
+        }, 1500);
+      }
+    }
+    lastAlbumPage = display;
     if (display === 9) eggSeenNine = true;
     if (display === 22 && eggSeenNine) fireEgg();
   }
@@ -417,6 +573,7 @@
     syncDrawerLang();
     eggLang();
     watchCover();
+    bindCoverOpen();
     bindBookTilt();
     bindEasterEgg();
     ready(function () {});
