@@ -541,7 +541,7 @@ body:not(.locked) .password-gate {
   max-height: min(70vh, 680px);
   object-fit: contain;
   background: transparent;
-  filter: contrast(1.04) saturate(1.05);
+  filter: none;
 }
 
 .lightbox-frame img {
