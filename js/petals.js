@@ -7,7 +7,7 @@
     var root = document.getElementById("ambient-petals");
     if (!root || root.childElementCount) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < 18; i++) {
       var el = document.createElement("span");
       el.className = "ambient-petal";
       var size = 6 + Math.random() * 10;
