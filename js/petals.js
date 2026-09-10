@@ -20,6 +20,19 @@
       el.style.opacity = String(0.14 + Math.random() * 0.18);
       root.appendChild(el);
     }
+    var extras = ["🍅", "🫑", "🍆", "🍊", "🫐", "🧸"];
+    for (var j = 0; j < 6; j++) {
+      var fall = document.createElement("span");
+      fall.className = "ambient-petal--fall";
+      fall.textContent = extras[j];
+      fall.style.left = 6 + Math.random() * 88 + "%";
+      fall.style.fontSize = 12 + Math.random() * 8 + "px";
+      fall.style.setProperty("--drift", Math.random() * 80 - 30 + "px");
+      fall.style.animationDuration = 16 + Math.random() * 14 + "s";
+      fall.style.animationDelay = -Math.random() * 18 + "s";
+      fall.style.background = "transparent";
+      root.appendChild(fall);
+    }
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", spawn);

@@ -18,26 +18,46 @@
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ma+Shan+Zheng&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=9" />
-    <link rel="stylesheet" href="css/polish.css?v=9" />
-    <link rel="stylesheet" href="css/motion.css?v=9" />
+    <link rel="stylesheet" href="css/styles.css?v=14" />
+    <link rel="stylesheet" href="css/polish.css?v=14" />
+    <link rel="stylesheet" href="css/motion.css?v=14" />
+    <link rel="stylesheet" href="css/keepsake.css?v=14" />
   </head>
   <body class="locked">
     <div id="password-gate" class="password-gate" aria-hidden="false">
       <div class="password-card">
         <p class="password-kicker zh">写给秋然</p>
         <h1 class="password-title zh">请输入密码</h1>
-        <p class="password-sub en">A small key for a private keepsake</p>
+        <p class="password-sub zh">写给大宝</p>
         <form id="password-form" class="password-form" autocomplete="off">
           <input type="password" id="password-input" class="password-input" placeholder="密码 / password" required />
           <button type="submit" class="password-btn zh">进入</button>
         </form>
         <p id="password-error" class="password-error" hidden>密码不对，再试一次</p>
+        <p class="password-motifs" aria-hidden="true">🍅 🫑 🍆 · 🐶 · 🧸 · 🫐 🍊</p>
       </div>
     </div>
     <div id="ambient-petals" aria-hidden="true"></div>
+    <div id="claire-burst" aria-hidden="true"></div>
     <div id="app">
-      <header class="topbar">
+      <div class="masthead">
+        <div class="masthead-lace" aria-hidden="true"></div>
+        <div class="masthead-banner">
+          <span class="masthead-icon masthead-icon--dog" title="金毛" aria-hidden="true">
+            <svg viewBox="0 0 64 48" width="42" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="34" cy="28" rx="16" ry="12" fill="#e2b56a"/>
+              <ellipse cx="18" cy="18" rx="8" ry="10" fill="#d4a24e"/>
+              <ellipse cx="48" cy="18" rx="8" ry="10" fill="#d4a24e"/>
+              <circle cx="30" cy="26" r="2.2" fill="#4a3f3a"/>
+              <circle cx="40" cy="26" r="2.2" fill="#4a3f3a"/>
+              <ellipse cx="35" cy="32" rx="3.2" ry="2.2" fill="#c9897b"/>
+              <path d="M22 38c6 6 20 6 26 0" stroke="#c4893c" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <p class="masthead-kicker zh">大宝 · 小朋友 · 狗狗</p>
+          <span class="masthead-icon masthead-icon--plush" title="毛绒" aria-hidden="true">🧸</span>
+        </div>
+        <header class="topbar">
         <div class="brand">
           <div id="brand-title" class="brand-title zh">写给秋然</div>
           <div id="brand-sub" class="brand-sub zh">四百多天</div>
@@ -53,7 +73,19 @@
             <button type="button" data-lang="en">EN</button>
           </div>
         </div>
-      </header>
+        </header>
+        <div id="claire-likes" class="claire-likes" role="toolbar" aria-label="秋然喜欢的小东西">
+          <button type="button" class="like-btn" data-like="tomato" title="番茄">🍅</button>
+          <button type="button" class="like-btn" data-like="pepper" title="青椒">🫑</button>
+          <button type="button" class="like-btn" data-like="eggplant" title="茄子">🍆</button>
+          <button type="button" class="like-btn" data-like="fruit" title="水果">🍊</button>
+          <button type="button" class="like-btn" data-like="berry" title="浆果">🫐</button>
+          <button type="button" class="like-btn" data-like="dog" title="金毛">🐶</button>
+          <button type="button" class="like-btn" data-like="plush" title="毛绒">🧸</button>
+          <button type="button" class="like-btn like-btn--blue" data-like="blue" title="蓝色">蓝</button>
+        </div>
+        <div class="masthead-lace masthead-lace--bottom" aria-hidden="true"></div>
+      </div>
 
       <!-- Cover -->
       <section id="view-cover" class="view cover active" data-view="cover" aria-label="cover"></section>
@@ -76,11 +108,25 @@
     <!-- Album page controls (fixed) -->
     <div id="album-controls" class="album-controls" style="display: none" aria-hidden="false">
       <div class="album-controls-inner">
+        <button type="button" id="btn-toc" class="ctrl-btn ctrl-btn--text" aria-label="目录">目录</button>
+        <button type="button" id="btn-first" class="ctrl-btn" aria-label="第一页">‹‹</button>
         <button type="button" id="btn-prev" class="ctrl-btn" aria-label="Previous">‹</button>
         <div id="page-indicator" class="page-indicator"></div>
         <button type="button" id="btn-next" class="ctrl-btn" aria-label="Next">›</button>
+        <button type="button" id="btn-last" class="ctrl-btn" aria-label="最后一页">››</button>
+        <button type="button" id="btn-random" class="ctrl-btn ctrl-btn--text" aria-label="随机一页">随机</button>
       </div>
     </div>
+
+    <div id="chapter-drawer" class="chapter-drawer" hidden>
+      <div class="chapter-drawer-card">
+        <h2 class="chapter-drawer-title zh">目录</h2>
+        <p class="chapter-drawer-sub">点一章，就翻到那里</p>
+        <div id="chapter-drawer-list" class="chapter-drawer-list"></div>
+        <button type="button" id="chapter-drawer-close" class="cover-open zh">收起</button>
+      </div>
+    </div>
+    <div id="claire-toast" class="claire-toast" hidden></div>
 
     <!-- Lightbox -->
     <div id="lightbox" class="lightbox" aria-hidden="true" role="dialog" aria-modal="true">
@@ -92,8 +138,9 @@
     </div>
 
     <script src="js/config.js"></script>
-    <script src="data/album.js?v=9"></script>
-    <script src="js/app.js?v=9"></script>
-    <script src="js/petals.js?v=9"></script>
+    <script src="data/album.js?v=14"></script>
+    <script src="js/app.js?v=14"></script>
+    <script src="js/petals.js?v=14"></script>
+    <script src="js/keepsake.js?v=14"></script>
   </body>
 </html>
