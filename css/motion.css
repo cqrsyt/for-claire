@@ -1,7 +1,7 @@
 /* Motion layer — falling petals, sparkles, page/cover/story reveals */
 
 #ambient-petals {
-  z-index: 450;
+  z-index: 40;
 }
 
 body {
