@@ -868,11 +868,26 @@ html[data-screen="story"] #album-controls,
   visibility: hidden !important;
 }
 
-html[data-screen="story"] #btn-see-us,
-html[data-screen="story"] .story-actions,
-#view-story.active #btn-see-us,
-#view-story.active .story-actions {
+#btn-see-us {
+  display: none;
+  position: fixed;
+  left: 50%;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 2147483000;
   pointer-events: auto !important;
-  position: relative;
-  z-index: 10001;
+  touch-action: manipulation;
+  min-width: 12rem;
+  min-height: 48px;
+}
+
+html[data-screen="story"] #btn-see-us {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+html[data-screen="story"] #btn-see-us:hover,
+html[data-screen="story"] #btn-see-us:focus-visible {
+  transform: translateX(-50%) translateY(-2px);
 }

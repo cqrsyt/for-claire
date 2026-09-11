@@ -410,41 +410,30 @@ html[data-screen="story"] body {
   line-height: 1.8;
 }
 
-.story-actions {
-  display: flex;
-  justify-content: center;
-  flex: 0 0 auto;
-  flex-shrink: 0;
-  margin-top: 0.7rem;
-  margin-bottom: 0;
-  padding-top: 0.35rem;
-  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
-  position: relative;
-  z-index: 10000;
-  pointer-events: auto;
-  isolation: isolate;
-}
-
-.story-actions .cover-open,
 #btn-see-us {
+  display: none;
+  position: fixed;
+  left: 50%;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 2147483000;
+  pointer-events: auto !important;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  position: relative;
-  z-index: 10001;
-  cursor: pointer;
-  pointer-events: auto !important;
-  isolation: isolate;
-  min-height: 48px;
   min-width: 12rem;
+  min-height: 48px;
+  cursor: pointer;
 }
 
-html[data-screen="story"] #btn-see-us,
-html[data-screen="story"] .story-actions,
-#view-story.active #btn-see-us,
-#view-story.active .story-actions {
-  pointer-events: auto !important;
-  position: relative;
-  z-index: 10001;
+html[data-screen="story"] #btn-see-us {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+html[data-screen="story"] #btn-see-us:hover,
+html[data-screen="story"] #btn-see-us:focus-visible {
+  transform: translateX(-50%) translateY(-2px);
 }
 
 html[data-screen="story"] #view-cover,
@@ -490,9 +479,8 @@ html[data-screen="story"] #album-controls,
   outline: 2px solid var(--rose);
 }
 
-.story-actions .cover-open.is-pressing {
-  transform: translateY(1px);
-  box-shadow: 0 2px 10px var(--shadow);
+html[data-screen="story"] .story-shell {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
 }
 
 .view.story,
@@ -522,12 +510,7 @@ html[data-screen="story"] #album-controls,
     font-size: 0.98rem;
     line-height: 1.7;
   }
-  .story-actions {
-    margin-top: 0.45rem;
-    padding-bottom: calc(0.65rem + env(safe-area-inset-bottom, 0px));
-  }
-  .story-actions .cover-open {
-    min-height: 48px;
+  #btn-see-us {
     min-width: min(100%, 16rem);
     padding: 0.85rem 1.6rem;
     font-size: 1.05rem;
@@ -973,4 +956,32 @@ button {
   color: var(--rose);
   font-size: 0.95rem;
   opacity: 0.85;
+}
+
+#btn-see-us {
+  position: fixed !important;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 2147483647 !important;
+  pointer-events: auto !important;
+  display: none;
+}
+html[data-screen="story"] #btn-see-us {
+  display: flex !important;
+}
+
+#btn-see-us {
+  position: fixed !important;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 2147483647 !important;
+  pointer-events: auto !important;
+}
+html:not([data-screen="story"]) #btn-see-us {
+  display: none !important;
+}
+html[data-screen="story"] #btn-see-us {
+  display: flex !important;
 }
