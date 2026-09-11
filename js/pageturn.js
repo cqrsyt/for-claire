@@ -6,7 +6,7 @@
 (function () {
   "use strict";
 
-  var DURATION = 760;
+  var DURATION = 1040;
   var FADE_MS = 220;
   var ANGLE = -170;
   var turning = false;
@@ -21,7 +21,7 @@
   var abortTimer = 0;
   var fadeTimer = 0;
   var lockTimer = 0;
-  var TURN_LOCK_MS = 800;
+  var TURN_LOCK_MS = 1700;
   var dragP = 0;
   var dragFrom = 0;
   var pageGo = null;
@@ -48,37 +48,62 @@
   function easeTurn(t) {
     if (t <= 0) return 0;
     if (t >= 1) return 1;
-    if (t < 0.62) {
-      var u = t / 0.62;
-      var s = u * u * (3 - 2 * u);
-      return 0.64 * s;
+    var u;
+    if (t < 0.15) {
+      u = t / 0.15;
+      return 0.05 * u * u * u;
     }
-    var v = (t - 0.62) / 0.38;
-    return 0.64 + 0.36 * (v * v);
+    if (t < 0.55) {
+      u = (t - 0.15) / 0.4;
+      return 0.05 + 0.45 * (u * u * (1.35 - 0.35 * u));
+    }
+    if (t < 0.78) {
+      u = (t - 0.55) / 0.23;
+      return 0.5 + 0.38 * (1 - Math.pow(1 - u, 1.12));
+    }
+    if (t < 0.9) {
+      u = (t - 0.78) / 0.12;
+      return 0.88 + 0.155 * (1 - (1 - u) * (1 - u));
+    }
+    u = (t - 0.9) / 0.1;
+    return 1.035 - 0.035 * (u * u * (3 - 2 * u));
+  }
+
+  function easeReturn(t) {
+    if (t <= 0) return 0;
+    if (t >= 1) return 1;
+    var c1 = 1.22;
+    var c3 = c1 + 1;
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
   }
 
   function shadowAmount(p) {
     if (p <= 0 || p >= 1) return 0;
-    if (p < 0.4) return Math.pow(p / 0.4, 1.25);
-    if (p <= 0.6) return 1;
-    return Math.pow((1 - p) / 0.4, 1.9);
+    if (p < 0.45) return Math.pow(p / 0.45, 1.12);
+    if (p <= 0.7) return 1;
+    return Math.pow((1 - p) / 0.3, 2.45);
   }
 
   function bendAmount(p) {
     if (p <= 0 || p >= 1) return 0;
     var mid = Math.sin(p * Math.PI);
-    if (p > 0.58) {
-      var k = (p - 0.58) / 0.42;
+    if (p > 0.62) {
+      var k = (p - 0.62) / 0.38;
       mid *= (1 - k) * (1 - k);
     }
-    return mid;
+    return Math.min(1, mid * 1.08);
   }
 
   function flattenAmount(p) {
-    if (p <= 0.6) return 0;
+    if (p <= 0.78) return 0;
     if (p >= 1) return 1;
-    var k = (p - 0.6) / 0.4;
+    var k = (p - 0.78) / 0.22;
     return k * k;
+  }
+
+  function paperCrack(p) {
+    if (p <= 0.46 || p >= 0.6) return 0;
+    return Math.sin(((p - 0.46) / 0.14) * Math.PI);
   }
 
   function stripFlip() {
@@ -161,7 +186,7 @@
       seg.appendChild(thick);
       parent.appendChild(seg);
       parent = seg;
-      segs.push({ node: seg, shade: shade, glint: glint, thick: thick });
+      segs.push({ node: seg, shade: shade, glint: glint, thick: thick, back: back });
     }
     wrap._segs = segs;
     wrap._n = n;
@@ -221,6 +246,21 @@
     fadeOnly = false;
     var host = block();
     if (host) host.classList.remove("is-turning", "is-turning-next", "is-turning-prev");
+    releaseFollow();
+  }
+
+  function followBook(dir) {
+    if (reduce()) return;
+    var book = document.getElementById("book-3d");
+    if (!book) return;
+    book.classList.remove("is-follow-next", "is-follow-prev");
+    book.classList.add(dir === "prev" ? "is-follow-prev" : "is-follow-next");
+  }
+
+  function releaseFollow() {
+    var book = document.getElementById("book-3d");
+    if (!book) return;
+    book.classList.remove("is-follow-next", "is-follow-prev");
   }
 
   function playFade() {
@@ -281,47 +321,80 @@
     if (!wrap || !wrap._segs) return;
     var segs = wrap._segs;
     var n = segs.length;
-    var bend = bendAmount(p);
-    var flat = flattenAmount(p);
-    var lift = bend * 16;
+    var p01 = p < 0 ? 0 : p > 1 ? 1 : p;
+    var bend = bendAmount(p01);
+    var flat = flattenAmount(p01);
+    var lift = bend * 28;
+    var zTwist = (total < 0 ? 1.7 : -1.7) * bend;
+    var crack = paperCrack(p01);
+    var edgeFlash = 0;
+    if (p01 > 0.5 && p01 < 0.8) {
+      edgeFlash = Math.sin(((p01 - 0.5) / 0.3) * Math.PI);
+    }
+    var backDim = p01 > 0.5 ? 0.22 * Math.min(1, (p01 - 0.5) / 0.22) : 0;
     wrap.style.transform =
       "translate3d(0," +
-      (-lift * 0.1) +
+      (-lift * 0.38) +
       "px," +
-      (6 + lift) +
+      (10 + lift) +
       "px) rotateX(" +
-      (bend * -7) +
+      (bend * -10.5) +
+      "deg) rotateZ(" +
+      zTwist +
       "deg)";
     var i;
     var weights = [];
     var sumW = 0;
     for (i = 0; i < n; i++) {
       var u = n === 1 ? 1 : i / (n - 1);
-      var w = 1 + bend * (0.3 + 2.4 * u * u);
+      var lag = (1 - u) * 0.16;
+      var local = (p01 - lag) / (1 - lag);
+      if (local < 0) local = 0;
+      if (local > 1) local = 1;
+      var localEase = local * local * (3 - 2 * local);
+      var w = 0.16 + localEase * (0.35 + 2.7 * u * u);
       weights[i] = w;
       sumW += w;
     }
-    var sh = shadowAmount(p);
-    var shade = 0.05 + sh * 0.58;
-    var glint = sh * 0.72;
-    var thick = 0.2 + bend * 0.88 + sh * 0.12;
+    var sh = shadowAmount(p01);
+    var shade = 0.05 + sh * 0.64 + crack * 0.18;
+    var glint = sh * 0.62 + edgeFlash * 0.55 + crack * 0.28;
+    var thick = 0.18 + bend * 0.92 + sh * 0.1 + crack * 0.5;
     for (i = 0; i < n; i++) {
       var spread = total * (weights[i] / sumW);
       var rigid = i === 0 ? total : 0;
       var rot = spread * (1 - flat) + rigid * flat;
       segs[i].node.style.transform =
-        "translate3d(0,0," + (0.6 + bend * 1.1) + "px) rotateY(" + rot + "deg)";
+        "translate3d(0," +
+        (bend * uLift(i, n)) +
+        "px," +
+        (0.7 + bend * 1.35) +
+        "px) rotateY(" +
+        rot +
+        "deg)";
       if (cheapPaint && i !== 0 && i !== n - 1) continue;
       var uShade = n === 1 ? 1 : i / (n - 1);
-      if (segs[i].shade) segs[i].shade.style.opacity = String(shade * (0.7 + 0.3 * uShade));
-      if (segs[i].glint) segs[i].glint.style.opacity = String(i === n - 1 ? glint : glint * 0.38);
+      if (segs[i].shade) segs[i].shade.style.opacity = String(shade * (0.62 + 0.38 * uShade));
+      if (segs[i].glint) {
+        segs[i].glint.style.opacity = String(i === n - 1 ? glint : glint * 0.32);
+      }
       if (segs[i].thick) segs[i].thick.style.opacity = String(thick);
+      if (segs[i].back) {
+        segs[i].back.style.filter = backDim ? "brightness(" + (1 - backDim) + ")" : "";
+      }
     }
+  }
+
+  function uLift(i, n) {
+    if (n <= 1) return 0;
+    return (i / (n - 1)) * 1.4;
   }
 
   function updateCast(p) {
     if (!cast) return;
-    cast.style.opacity = String(shadowAmount(p) * 0.58);
+    var p01 = p < 0 ? 0 : p > 1 ? 1 : p;
+    var crack = paperCrack(p01);
+    cast.style.opacity = String(Math.min(1, shadowAmount(p01) * 0.64 + crack * 0.28));
   }
 
   function animate(dir, fromP, reverse) {
@@ -330,6 +403,7 @@
       return;
     }
     stripFlip();
+    followBook(dir);
     if (fromP == null) fromP = 0;
     var endP = reverse ? 0 : 1;
     var span = Math.abs(endP - fromP);
@@ -341,11 +415,14 @@
       }
       return;
     }
-    var dur = Math.max(200, DURATION * span);
+    var ease = reverse ? easeReturn : easeTurn;
+    var dur = reverse
+      ? 280 + Math.min(1, span / 0.2) * 80
+      : Math.max(420, DURATION * span);
     var start = performance.now();
     function tick(now) {
       var t = Math.min(1, (now - start) / dur);
-      var p = fromP + (endP - fromP) * easeTurn(t);
+      var p = fromP + (endP - fromP) * ease(t);
       if (t >= 1) p = endP;
       var angle = dir === "prev" ? ANGLE + p * -ANGLE : p * ANGLE;
       poseCurl(sheet, angle, p);
@@ -393,6 +470,7 @@
     started = true;
     fadeOnly = false;
     armLock();
+    followBook(dir);
     dragP = 0;
     dragFrom = album.page();
     var host = block();

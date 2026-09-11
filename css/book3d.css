@@ -266,14 +266,26 @@ html:not([data-screen="album"]) #album-controls .ctrl-btn {
   justify-content: center;
   overflow: visible;
   transform-style: preserve-3d;
-  transform: rotateX(8deg) rotateY(-5deg);
-  transition: transform 0.45s ease;
+  --book-rx: 8deg;
+  --book-ry: -5deg;
+  transform: rotateX(var(--book-rx)) rotateY(var(--book-ry));
+  transition: transform 0.2s cubic-bezier(0.33, 0.1, 0.18, 1);
   filter: drop-shadow(0 32px 38px rgba(70, 90, 120, 0.3));
   width: min(100%, 860px);
 }
 
 .book-3d.is-tilting {
   transition: transform 0.12s ease-out;
+}
+
+.book-3d.is-follow-next {
+  transform: rotateX(var(--book-rx)) rotateY(calc(var(--book-ry) - 5deg)) !important;
+  transition: transform 0.4s cubic-bezier(0.22, 0.72, 0.22, 1);
+}
+
+.book-3d.is-follow-prev {
+  transform: rotateX(var(--book-rx)) rotateY(calc(var(--book-ry) + 5deg)) !important;
+  transition: transform 0.4s cubic-bezier(0.22, 0.72, 0.22, 1);
 }
 
 .book-3d-cover {
@@ -590,7 +602,7 @@ html:not([data-screen="album"]) #album-controls .ctrl-btn {
 .turn-cast {
   z-index: 7;
   opacity: 0;
-  background: linear-gradient(90deg, rgba(28, 22, 16, 0.52) 0%, rgba(28, 22, 16, 0.2) 40%, transparent 78%);
+  background: linear-gradient(90deg, rgba(28, 22, 16, 0.6) 0%, rgba(28, 22, 16, 0.24) 38%, transparent 74%);
 }
 
 .turn-curl {
@@ -663,6 +675,15 @@ html:not([data-screen="album"]) #album-controls .ctrl-btn {
     transparent 28%,
     rgba(255, 252, 246, 0.42) 48%,
     transparent 68%
+  );
+}
+
+.turn-seg--edge .turn-seg-glint {
+  background: linear-gradient(
+    95deg,
+    transparent 42%,
+    rgba(255, 252, 248, 0.72) 52%,
+    transparent 64%
   );
 }
 
@@ -800,7 +821,9 @@ html:not([data-screen="album"]) #album-controls .ctrl-btn {
     opacity: 0.26;
   }
   .book-3d {
-    transform: rotateX(10deg) rotateY(-8deg);
+    --book-rx: 10deg;
+    --book-ry: -8deg;
+    transform: rotateX(var(--book-rx)) rotateY(var(--book-ry));
     width: 100%;
   }
   .book-3d-block {
@@ -829,6 +852,10 @@ html:not([data-screen="album"]) #album-controls .ctrl-btn {
   }
   .cover-book-3d { transform: none; }
   .book-3d { transform: none; }
+  .book-3d.is-follow-next,
+  .book-3d.is-follow-prev {
+    transform: none !important;
+  }
   .cover-book-3d.is-opening .cover-frame { transform: none; }
 }
 
