@@ -433,9 +433,10 @@
     var lastCover = 0;
 
     function onCoverIntent(e) {
-      if (e.type === "pointerup" && e.pointerType === "mouse") return;
       var el = e.target;
       if (el && el.nodeType === 3) el = el.parentElement;
+      if (el && el.closest && el.closest("#btn-see-us, .story-actions")) return;
+      if (e.type === "pointerup" && e.pointerType === "mouse") return;
       var storyBtn = el && el.closest && el.closest("[data-action=open-story]");
       if (!storyBtn) return;
       var now = Date.now();

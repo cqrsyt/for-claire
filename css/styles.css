@@ -211,7 +211,6 @@ body {
 /* ---------- Cover ---------- */
 .cover {
   flex: 1;
-  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -439,28 +438,56 @@ html[data-screen="story"] body {
   min-width: 12rem;
 }
 
-html[data-screen="story"] #btn-see-us {
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-  visibility: visible !important;
+html[data-screen="story"] #btn-see-us,
+html[data-screen="story"] .story-actions,
+#view-story.active #btn-see-us,
+#view-story.active .story-actions {
   pointer-events: auto !important;
-  z-index: 10001 !important;
+  position: relative;
+  z-index: 10001;
 }
 
-html[data-screen="story"] #ambient-petals,
-html[data-screen="story"] #ambient-petals *,
-html[data-screen="story"] #xuan-paper,
-html[data-screen="story"] #claire-burst,
-html[data-screen="story"] #claire-burst *,
-html[data-screen="story"] #album-controls,
-html[data-screen="story"] #album-controls * {
+html[data-screen="story"] #view-cover,
+html[data-screen="story"] #view-album,
+html[data-screen="story"] #view-album * {
   pointer-events: none !important;
 }
 
-html[data-screen="story"] #album-controls {
+html[data-screen="story"] #view-cover,
+html[data-screen="story"] #view-album {
   display: none !important;
   visibility: hidden !important;
+}
+
+html[data-screen="story"] #album-controls,
+html[data-screen="story"] #album-controls *,
+html[data-screen="story"] #book-stage,
+html[data-screen="story"] #book-stage *,
+html[data-screen="story"] #ambient-petals,
+html[data-screen="story"] #ambient-petals *,
+html[data-screen="story"] #claire-burst,
+html[data-screen="story"] #claire-burst *,
+html[data-screen="story"] #xuan-paper,
+html[data-screen="story"] #xuan-paper *,
+#view-story.active ~ #view-album #album-controls,
+#view-story.active ~ #view-album #album-controls *,
+#view-story.active ~ #view-album #book-stage,
+#view-story.active ~ #view-album #book-stage * {
+  pointer-events: none !important;
+}
+
+html[data-screen="story"] #album-controls,
+#view-story.active ~ #view-album #album-controls {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+#btn-see-us.is-opening {
+  opacity: 0.72;
+}
+
+#btn-see-us.is-error {
+  outline: 2px solid var(--rose);
 }
 
 .story-actions .cover-open.is-pressing {
@@ -511,7 +538,6 @@ html[data-screen="story"] #album-controls {
 .album {
   padding: 0.5rem 0 5rem;
   flex: 1;
-  display: flex;
   flex-direction: column;
 }
 

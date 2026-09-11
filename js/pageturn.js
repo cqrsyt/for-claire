@@ -506,7 +506,8 @@
   }
 
   function onClickCapture(e) {
-    if (e.target.closest && e.target.closest("#btn-see-us, [data-action=open-album], .nav-pills [data-view=album]")) {
+    if (!albumViewActive()) return;
+    if (e.target.closest && e.target.closest("#btn-see-us, .story-actions, [data-action=open-album], .nav-pills [data-view=album]")) {
       if (turning) clearTurn();
       return;
     }
