@@ -814,6 +814,18 @@ html:not([data-screen="album"]) #album-controls .ctrl-btn {
   }
 }
 
+@media (max-width: 720px), (pointer: coarse) {
+  .book-3d-block .book-page {
+    animation: none;
+  }
+  .book-sketch--maple,
+  .book-sketch--rose,
+  .book-sketch--couple,
+  .book-sketch--hands {
+    animation: none;
+  }
+}
+
 @media (max-width: 899px) {
   .book-sketch--couple,
   .book-sketch--rose {

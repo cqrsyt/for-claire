@@ -2,6 +2,7 @@
 
 #ambient-petals {
   z-index: 0;
+  contain: layout paint;
 }
 
 body {
@@ -193,6 +194,17 @@ body {
 @keyframes sparkle {
   0%, 100% { opacity: 0.08; transform: scale(0.5) translateY(0); }
   50% { opacity: 0.85; transform: scale(1.25) translateY(-10px); }
+}
+
+body.is-page-turning {
+  animation-play-state: paused;
+}
+
+body.is-page-turning #ambient-petals *,
+body.is-page-turning .book-sketch,
+body.is-page-turning .masthead-lace,
+body.is-page-turning .book-3d-block .book-page {
+  animation-play-state: paused !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

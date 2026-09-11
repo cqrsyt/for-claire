@@ -196,6 +196,7 @@
 
   function sprinklePaws() {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 720) return;
     var root = document.getElementById("ambient-petals");
     if (!root) return;
     for (var i = 0; i < 5; i++) {

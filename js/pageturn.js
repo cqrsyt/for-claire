@@ -131,7 +131,7 @@
   }
 
   function makeCurl(page) {
-    var n = 6;
+    var n = cheapPaint ? 4 : 6;
     var w = page.offsetWidth;
     var h = page.offsetHeight;
     var slice = w / n;
@@ -246,6 +246,7 @@
     fadeOnly = false;
     var host = block();
     if (host) host.classList.remove("is-turning", "is-turning-next", "is-turning-prev");
+    document.body.classList.remove("is-page-turning");
     releaseFollow();
   }
 
@@ -284,6 +285,7 @@
     var host = block();
     if (!page || !host || sheet) return false;
     host.classList.add("is-turning");
+    document.body.classList.add("is-page-turning");
     cheapPaint = window.innerWidth < 720;
     sheet = makeCurl(page);
     sheet._flatHtml = page.innerHTML;
