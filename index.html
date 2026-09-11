@@ -18,11 +18,11 @@
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ma+Shan+Zheng&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=33" />
-    <link rel="stylesheet" href="css/polish.css?v=33" />
-    <link rel="stylesheet" href="css/motion.css?v=33" />
-    <link rel="stylesheet" href="css/keepsake.css?v=33" />
-    <link rel="stylesheet" href="css/book3d.css?v=33" />
+    <link rel="stylesheet" href="css/styles.css?v=34" />
+    <link rel="stylesheet" href="css/polish.css?v=34" />
+    <link rel="stylesheet" href="css/motion.css?v=34" />
+    <link rel="stylesheet" href="css/keepsake.css?v=34" />
+    <link rel="stylesheet" href="css/book3d.css?v=34" />
   </head>
   <body class="locked">
     <div id="password-gate" class="password-gate" aria-hidden="false">
@@ -95,7 +95,14 @@
       <section id="view-cover" class="view cover active" data-view="cover" aria-label="cover"></section>
 
       <!-- Our Story -->
-      <section id="view-story" class="view story" data-view="story" aria-label="story"></section>
+      <section id="view-story" class="view story" data-view="story" aria-label="story">
+        <div class="story-shell">
+          <div id="story-copy" class="story-card"></div>
+          <div class="story-actions">
+            <button type="button" id="btn-see-us" class="cover-open zh">去看看我们</button>
+          </div>
+        </div>
+      </section>
 
       <!-- Album -->
       <section id="view-album" class="view album" data-view="album" aria-label="album">
@@ -176,12 +183,13 @@
       </div>
     </div>
 
-    <script src="js/config.js?v=33"></script>
-    <script src="js/sha256.js?v=33"></script>
+    <script src="js/config.js?v=34"></script>
+    <script src="js/sha256.js?v=34"></script>
     <script src="data/album.js?v=28"></script>
-    <script src="js/app.js?v=33"></script>
-    <script src="js/petals.js?v=33"></script>
-    <script src="js/keepsake.js?v=33"></script>
-    <script src="js/pageturn.js?v=33"></script>
+    <script src="js/app.js?v=34"></script>
+    <script src="js/petals.js?v=34"></script>
+    <script src="js/keepsake.js?v=34"></script>
+    <script src="js/pageturn.js?v=34"></script>
+    <script src="js/see-us.js?v=34"></script>
   </body>
 </html>

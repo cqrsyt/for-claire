@@ -452,13 +452,6 @@
 
     document.addEventListener("pointerup", onCoverIntent, true);
     document.addEventListener("click", onCoverIntent, true);
-
-    document.addEventListener("click", function (e) {
-      var el = e.target;
-      if (el && el.nodeType === 3) el = el.parentElement;
-      if (!(el && el.closest && el.closest("[data-action=open-album]"))) return;
-      if (window.claireOpenAlbum) window.claireOpenAlbum();
-    });
   }
 
   function bindBookTilt() {

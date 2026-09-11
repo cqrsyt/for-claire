@@ -13,15 +13,29 @@ window.SITE_CONFIG = {
 };
 
 window.claireOpenAlbum = function () {
+  function run(api) {
+    try {
+      if (window.ClaireTurnClear) window.ClaireTurnClear();
+    } catch (err) {}
+    try {
+      api.go(0);
+    } catch (err2) {}
+    try {
+      api.open("album");
+    } catch (err3) {}
+  }
   var api = window.ClaireAlbum;
-  if (!api) return;
-  try {
-    if (window.ClaireTurnClear) window.ClaireTurnClear();
-  } catch (err) {}
-  try {
-    api.go(0);
-  } catch (err2) {}
-  try {
-    api.open("album");
-  } catch (err3) {}
+  if (api) {
+    run(api);
+    return;
+  }
+  var n = 0;
+  var t = window.setInterval(function () {
+    n += 1;
+    api = window.ClaireAlbum;
+    if (api || n > 40) {
+      window.clearInterval(t);
+      if (api) run(api);
+    }
+  }, 50);
 };
