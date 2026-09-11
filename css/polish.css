@@ -375,8 +375,10 @@ body::after {
 }
 
 body.locked #app,
-body.locked #album-controls {
+body.locked #album-controls,
+body.locked #btn-see-us {
   display: none !important;
+  pointer-events: none !important;
 }
 
 .password-gate {

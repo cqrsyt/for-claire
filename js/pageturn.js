@@ -599,8 +599,7 @@
       }
       var nav = navTarget(e.target);
       if (turning && nav) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
+        clearTurn();
         return;
       }
       if (e.target.closest && e.target.closest("#btn-next, #btn-last")) arm("next");

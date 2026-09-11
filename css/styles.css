@@ -148,6 +148,7 @@ body {
   cursor: pointer;
   transition: background var(--transition), color var(--transition);
   font-family: var(--font-en);
+  touch-action: manipulation;
 }
 
 .lang-toggle button.active {
@@ -172,6 +173,7 @@ body {
   cursor: pointer;
   transition: all var(--transition);
   font-family: inherit;
+  touch-action: manipulation;
 }
 
 .nav-pills button.active {
@@ -742,6 +744,7 @@ html[data-screen="story"] .story-shell {
   pointer-events: auto;
   position: relative;
   z-index: 282;
+  touch-action: manipulation;
 }
 
 .ctrl-btn:hover:not(:disabled),
