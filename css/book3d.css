@@ -181,6 +181,11 @@
   pointer-events: none;
 }
 
+#ambient-petals,
+#ambient-petals * {
+  pointer-events: none !important;
+}
+
 #album-controls {
   z-index: 280;
 }
@@ -191,6 +196,8 @@ html:not([data-screen="album"]) #album-controls .ctrl-btn {
   display: none !important;
   pointer-events: none !important;
   visibility: hidden !important;
+  height: 0 !important;
+  overflow: hidden !important;
 }
 
 #album-controls .album-controls-inner,
@@ -731,7 +738,17 @@ html:not([data-screen="album"]) #album-controls .ctrl-btn {
 }
 
 #ambient-petals {
-  z-index: 55;
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+
+#xuan-paper {
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+
+#app {
+  z-index: 2;
 }
 
 .maple-leaf--1 { background-color: #d9894a; }

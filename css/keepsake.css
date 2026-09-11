@@ -392,6 +392,7 @@ body.claire-blue {
   height: 14px;
   border-radius: 50%;
   background: rgba(201, 162, 78, 0.28);
+  pointer-events: none;
   animation: pawFade 4.8s ease-in-out infinite;
 }
 

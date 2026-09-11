@@ -428,27 +428,104 @@
   function bindCoverOpen() {
     if (document._coverOpenBound) return;
     document._coverOpenBound = true;
+    var lastAlbumOpen = 0;
+    var lastCoverOpen = 0;
+
+    function hitFromEvent(e, selector) {
+      var el = e.target;
+      if (e.changedTouches && e.changedTouches[0]) {
+        var t = e.changedTouches[0];
+        el = document.elementFromPoint(t.clientX, t.clientY) || el;
+      } else if (typeof e.clientX === "number" && typeof e.clientY === "number" && (e.clientX || e.clientY)) {
+        el = document.elementFromPoint(e.clientX, e.clientY) || el;
+      }
+      return el && el.closest ? el.closest(selector) : null;
+    }
+
+    function openCoverNow(e, storyBtn) {
+      var now = Date.now();
+      if (now - lastCoverOpen < 480) {
+        if (e) {
+          if (e.cancelable) e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+        return;
+      }
+      lastCoverOpen = now;
+      if (e) {
+        if (e.cancelable) e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+      playCoverReveal(e);
+    }
+
+    function openAlbumNow(e, albumBtn) {
+      var now = Date.now();
+      if (now - lastAlbumOpen < 480) {
+        if (e) {
+          if (e.cancelable) e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+        return;
+      }
+      lastAlbumOpen = now;
+      if (e) {
+        if (e.cancelable) e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+      if (albumBtn) albumBtn.classList.add("is-pressing");
+      var api = album();
+      if (!api) return;
+      if (window.ClaireTurnClear) window.ClaireTurnClear();
+      prefetchFirstPage();
+      try {
+        api.go(0);
+      } catch (err) {}
+      try {
+        api.open("album");
+      } catch (err2) {}
+    }
+
+    document.addEventListener(
+      "pointerup",
+      function (e) {
+        if (e.pointerType === "mouse") return;
+        var storyBtn = hitFromEvent(e, "[data-action=open-story]");
+        if (storyBtn) {
+          openCoverNow(e, storyBtn);
+          return;
+        }
+        var albumBtn = hitFromEvent(e, "[data-action=open-album]");
+        if (!albumBtn) return;
+        openAlbumNow(e, albumBtn);
+      },
+      true
+    );
+    document.addEventListener(
+      "touchend",
+      function (e) {
+        var storyBtn = hitFromEvent(e, "[data-action=open-story]");
+        if (storyBtn) {
+          openCoverNow(e, storyBtn);
+          return;
+        }
+        var albumBtn = hitFromEvent(e, "[data-action=open-album]");
+        if (!albumBtn) return;
+        openAlbumNow(e, albumBtn);
+      },
+      { capture: true, passive: false }
+    );
     document.addEventListener(
       "click",
       function (e) {
-        var storyBtn = e.target.closest && e.target.closest("[data-action=open-story]");
+        var storyBtn = hitFromEvent(e, "[data-action=open-story]");
         if (storyBtn) {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          playCoverReveal(e);
+          openCoverNow(e, storyBtn);
           return;
         }
-        var albumBtn = e.target.closest && e.target.closest("[data-action=open-album]");
+        var albumBtn = hitFromEvent(e, "[data-action=open-album]");
         if (!albumBtn) return;
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        albumBtn.classList.add("is-pressing");
-        if (window.ClaireTurnClear) window.ClaireTurnClear();
-        var api = album();
-        if (!api) return;
-        prefetchFirstPage();
-        api.go(0);
-        api.open("album");
+        openAlbumNow(e, albumBtn);
       },
       true
     );
