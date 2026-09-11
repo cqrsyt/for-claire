@@ -345,7 +345,8 @@
   }
 
   function playCoverReveal() {
-    if (coverOpening) return;
+    if (coverOpening && coverLockTimer) return;
+    if (coverOpening) resetCoverMotion();
     var api = album();
     if (!api) {
       coverOpening = true;
@@ -428,54 +429,56 @@
   function bindCoverOpen() {
     if (document._coverOpenBound) return;
     document._coverOpenBound = true;
-    var lastAlbumOpen = 0;
-    var lastCoverOpen = 0;
+    var lastOpen = 0;
 
-    function hitFromEvent(e, selector) {
+    function closestBtn(e, selector) {
       var el = e.target;
+      if (el && el.nodeType === 3) el = el.parentElement;
+      if (el && el.closest) {
+        var hit = el.closest(selector);
+        if (hit) return hit;
+      }
       if (e.changedTouches && e.changedTouches[0]) {
         var t = e.changedTouches[0];
-        el = document.elementFromPoint(t.clientX, t.clientY) || el;
-      } else if (typeof e.clientX === "number" && typeof e.clientY === "number" && (e.clientX || e.clientY)) {
-        el = document.elementFromPoint(e.clientX, e.clientY) || el;
+        el = document.elementFromPoint(t.clientX, t.clientY);
+        if (el && el.closest) return el.closest(selector);
       }
-      return el && el.closest ? el.closest(selector) : null;
+      return null;
     }
 
-    function openCoverNow(e, storyBtn) {
+    function tooSoon() {
       var now = Date.now();
-      if (now - lastCoverOpen < 480) {
-        if (e) {
-          if (e.cancelable) e.preventDefault();
-          e.stopImmediatePropagation();
-        }
+      if (now - lastOpen < 480) return true;
+      lastOpen = now;
+      return false;
+    }
+
+    function openCoverNow(e) {
+      if (tooSoon()) {
+        if (e && e.cancelable) e.preventDefault();
+        if (e) e.stopImmediatePropagation();
         return;
       }
-      lastCoverOpen = now;
       if (e) {
         if (e.cancelable) e.preventDefault();
         e.stopImmediatePropagation();
       }
-      playCoverReveal(e);
+      playCoverReveal();
     }
 
     function openAlbumNow(e, albumBtn) {
-      var now = Date.now();
-      if (now - lastAlbumOpen < 480) {
-        if (e) {
-          if (e.cancelable) e.preventDefault();
-          e.stopImmediatePropagation();
-        }
-        return;
+      var api = album();
+      if (!api) return false;
+      if (tooSoon()) {
+        if (e && e.cancelable) e.preventDefault();
+        if (e) e.stopImmediatePropagation();
+        return true;
       }
-      lastAlbumOpen = now;
       if (e) {
         if (e.cancelable) e.preventDefault();
         e.stopImmediatePropagation();
       }
       if (albumBtn) albumBtn.classList.add("is-pressing");
-      var api = album();
-      if (!api) return;
       if (window.ClaireTurnClear) window.ClaireTurnClear();
       prefetchFirstPage();
       try {
@@ -484,51 +487,23 @@
       try {
         api.open("album");
       } catch (err2) {}
+      return true;
     }
 
-    document.addEventListener(
-      "pointerup",
-      function (e) {
-        if (e.pointerType === "mouse") return;
-        var storyBtn = hitFromEvent(e, "[data-action=open-story]");
-        if (storyBtn) {
-          openCoverNow(e, storyBtn);
-          return;
-        }
-        var albumBtn = hitFromEvent(e, "[data-action=open-album]");
-        if (!albumBtn) return;
-        openAlbumNow(e, albumBtn);
-      },
-      true
-    );
-    document.addEventListener(
-      "touchend",
-      function (e) {
-        var storyBtn = hitFromEvent(e, "[data-action=open-story]");
-        if (storyBtn) {
-          openCoverNow(e, storyBtn);
-          return;
-        }
-        var albumBtn = hitFromEvent(e, "[data-action=open-album]");
-        if (!albumBtn) return;
-        openAlbumNow(e, albumBtn);
-      },
-      { capture: true, passive: false }
-    );
-    document.addEventListener(
-      "click",
-      function (e) {
-        var storyBtn = hitFromEvent(e, "[data-action=open-story]");
-        if (storyBtn) {
-          openCoverNow(e, storyBtn);
-          return;
-        }
-        var albumBtn = hitFromEvent(e, "[data-action=open-album]");
-        if (!albumBtn) return;
-        openAlbumNow(e, albumBtn);
-      },
-      true
-    );
+    function onOpenIntent(e) {
+      if (e.type === "pointerup" && e.pointerType === "mouse") return;
+      var storyBtn = closestBtn(e, "[data-action=open-story]");
+      if (storyBtn) {
+        openCoverNow(e);
+        return;
+      }
+      var albumBtn = closestBtn(e, "[data-action=open-album]");
+      if (!albumBtn) return;
+      openAlbumNow(e, albumBtn);
+    }
+
+    document.addEventListener("pointerup", onOpenIntent, true);
+    document.addEventListener("click", onOpenIntent, true);
   }
 
   function bindBookTilt() {
