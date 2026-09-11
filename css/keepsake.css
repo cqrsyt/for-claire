@@ -244,6 +244,33 @@ body.claire-blue {
   display: none !important;
 }
 
+#chapter-drawer[hidden],
+#birthday-egg[hidden],
+#lightbox:not(.open),
+#lightbox[hidden] {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  z-index: 0;
+}
+
+#chapter-drawer:not([hidden]) {
+  pointer-events: auto;
+  z-index: 240;
+}
+
+#birthday-egg:not([hidden]) {
+  pointer-events: auto;
+  z-index: 360;
+}
+
+#lightbox.open {
+  display: flex;
+  pointer-events: auto;
+  visibility: visible;
+  z-index: 200;
+}
+
 .chapter-drawer-card {
   width: min(100%, 420px);
   max-height: min(78dvh, 640px);

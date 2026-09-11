@@ -500,11 +500,18 @@
 .book-3d-block.is-turning {
   z-index: 4;
   pointer-events: none;
-  transform: rotateY(-5deg);
+  perspective: 1080px;
+  perspective-origin: 8% 46%;
 }
 
 .book-3d-block.is-turning .book-page {
   animation: none;
+}
+
+.book-3d-block.is-turning > #book-page {
+  animation: none !important;
+  transition: none !important;
+  transform: none;
 }
 
 .book-3d-block.is-turning-prev > #book-page {
@@ -547,12 +554,14 @@
 .turn-cast {
   z-index: 7;
   opacity: 0;
-  background: linear-gradient(90deg, rgba(36, 28, 22, 0.36), transparent 70%);
+  background: linear-gradient(90deg, rgba(28, 22, 16, 0.52) 0%, rgba(28, 22, 16, 0.2) 40%, transparent 78%);
 }
 
 .turn-curl {
   z-index: 8;
   overflow: visible;
+  transform-origin: left center;
+  transform-style: preserve-3d;
 }
 
 .turn-seg {
@@ -560,6 +569,7 @@
   top: 0;
   left: 100%;
   height: 100%;
+  overflow: visible;
   transform-origin: left center;
   transform-style: preserve-3d;
 }
@@ -623,9 +633,9 @@
 .turn-seg-back {
   transform: rotateY(180deg);
   background:
-    linear-gradient(90deg, rgba(90, 76, 62, 0.2) 0, transparent 12px),
-    repeating-linear-gradient(90deg, #fbf6f0 0 1px, #f3eae2 1px 2px),
-    linear-gradient(165deg, #f4ebe3, #fffdf8);
+    linear-gradient(90deg, rgba(70, 54, 40, 0.34) 0, transparent 16px),
+    repeating-linear-gradient(90deg, #efe6dc 0 1px, #e3d6c8 1px 2px),
+    linear-gradient(165deg, #e6d8cc, #f4ece4);
 }
 
 .turn-seg-thickness {
@@ -633,13 +643,25 @@
   top: 0;
   bottom: 0;
   right: 0;
-  width: 3px;
-  transform: rotateY(-90deg);
+  width: 5px;
+  transform: rotateY(-90deg) translateZ(0.4px);
   transform-origin: right center;
-  background: linear-gradient(180deg, #f6eee4, #d9cbb8 48%, #efe4d6);
-  box-shadow: 1px 0 2px rgba(70, 52, 36, 0.22);
-  opacity: 0.4;
+  background: linear-gradient(180deg, #f8f0e6, #cbb89e 46%, #efe2d4);
+  box-shadow: 1px 0 3px rgba(70, 52, 36, 0.28);
+  opacity: 0.45;
   pointer-events: none;
+}
+
+.turn-seg--spine .turn-seg-face::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 12px;
+  pointer-events: none;
+  z-index: 5;
+  background: linear-gradient(90deg, rgba(40, 32, 24, 0.2), transparent);
 }
 
 .turn-seg--edge .turn-seg-face,
@@ -648,11 +670,11 @@
 }
 
 .turn-seg--edge .turn-seg-face {
-  box-shadow: 8px 14px 26px rgba(40, 32, 24, 0.28);
+  box-shadow: 10px 16px 28px rgba(40, 32, 24, 0.34);
 }
 
 .turn-seg--edge .turn-seg-thickness {
-  width: 4px;
+  width: 6px;
 }
 
 .book-page.is-fade-turn {

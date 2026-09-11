@@ -674,10 +674,20 @@ body {
   justify-content: center;
   padding: 1.5rem;
   backdrop-filter: blur(6px);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.lightbox:not(.open) {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden;
 }
 
 .lightbox.open {
   display: flex;
+  pointer-events: auto;
+  visibility: visible;
   animation: fadeIn 0.25s ease;
 }
 

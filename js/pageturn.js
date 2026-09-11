@@ -6,13 +6,9 @@
 (function () {
   "use strict";
 
-  var DURATION = 720;
+  var DURATION = 760;
   var FADE_MS = 220;
-  var ANGLE = -168;
-  var BX1 = 0.25;
-  var BY1 = 0;
-  var BX2 = 0.14;
-  var BY2 = 1;
+  var ANGLE = -170;
   var turning = false;
   var started = false;
   var fadeOnly = false;
@@ -24,6 +20,8 @@
   var raf = 0;
   var abortTimer = 0;
   var fadeTimer = 0;
+  var lockTimer = 0;
+  var TURN_LOCK_MS = 1200;
   var dragP = 0;
   var dragFrom = 0;
   var pageGo = null;
@@ -47,50 +45,40 @@
     return !!(view && view.classList.contains("active"));
   }
 
-  function cubic(t, a, b) {
-    var it = 1 - t;
-    return 3 * it * it * t * a + 3 * it * t * t * b + t * t * t;
-  }
-
-  function cubicD(t, a, b) {
-    var it = 1 - t;
-    return 3 * it * it * a + 6 * it * t * (b - a) + 3 * t * t * (1 - b);
-  }
-
   function easeTurn(t) {
     if (t <= 0) return 0;
     if (t >= 1) return 1;
-    var x = t;
-    var i;
-    for (i = 0; i < 6; i++) {
-      var z = cubic(x, BX1, BX2) - t;
-      var d = cubicD(x, BX1, BX2);
-      if (Math.abs(d) < 1e-5) break;
-      x -= z / d;
+    if (t < 0.62) {
+      var u = t / 0.62;
+      var s = u * u * (3 - 2 * u);
+      return 0.64 * s;
     }
-    if (x < 0) x = 0;
-    else if (x > 1) x = 1;
-    var y = cubic(x, BY1, BY2);
-    if (y < 0) return 0;
-    if (y > 1) return 1;
-    return y;
+    var v = (t - 0.62) / 0.38;
+    return 0.64 + 0.36 * (v * v);
   }
 
   function shadowAmount(p) {
     if (p <= 0 || p >= 1) return 0;
-    if (p < 0.4) return Math.pow(p / 0.4, 1.35);
+    if (p < 0.4) return Math.pow(p / 0.4, 1.25);
     if (p <= 0.6) return 1;
-    return Math.pow((1 - p) / 0.4, 1.85);
+    return Math.pow((1 - p) / 0.4, 1.9);
   }
 
   function bendAmount(p) {
     if (p <= 0 || p >= 1) return 0;
     var mid = Math.sin(p * Math.PI);
-    if (p > 0.7) {
-      var k = (p - 0.7) / 0.3;
-      mid *= (1 - k) * (1 - k) * (1 - k);
+    if (p > 0.58) {
+      var k = (p - 0.58) / 0.42;
+      mid *= (1 - k) * (1 - k);
     }
     return mid;
+  }
+
+  function flattenAmount(p) {
+    if (p <= 0.6) return 0;
+    if (p >= 1) return 1;
+    var k = (p - 0.6) / 0.4;
+    return k * k;
   }
 
   function stripFlip() {
@@ -118,7 +106,7 @@
   }
 
   function makeCurl(page) {
-    var n = 5;
+    var n = 6;
     var w = page.offsetWidth;
     var h = page.offsetHeight;
     var slice = w / n;
@@ -198,12 +186,28 @@
     return node;
   }
 
+  function armLock() {
+    if (lockTimer) window.clearTimeout(lockTimer);
+    lockTimer = window.setTimeout(function () {
+      lockTimer = 0;
+      clearTurn();
+    }, TURN_LOCK_MS);
+  }
+
   function clearTurn() {
     if (raf) window.cancelAnimationFrame(raf);
     raf = 0;
     if (abortTimer) {
       window.clearTimeout(abortTimer);
       abortTimer = 0;
+    }
+    if (fadeTimer) {
+      window.clearTimeout(fadeTimer);
+      fadeTimer = 0;
+    }
+    if (lockTimer) {
+      window.clearTimeout(lockTimer);
+      lockTimer = 0;
     }
     if (sheet && sheet.parentNode) sheet.parentNode.removeChild(sheet);
     if (underlay && underlay.parentNode) underlay.parentNode.removeChild(underlay);
@@ -231,10 +235,7 @@
     fadeTimer = window.setTimeout(function () {
       fadeTimer = 0;
       if (page) page.classList.remove("is-fade-turn");
-      turning = false;
-      started = false;
-      armedDir = null;
-      fadeOnly = false;
+      clearTurn();
     }, FADE_MS + 40);
   }
 
@@ -258,7 +259,10 @@
   function mountIncoming() {
     var page = document.getElementById("book-page");
     var host = block();
-    if (!page || !host || !sheet) return;
+    if (!page || !host || !sheet) {
+      clearTurn();
+      return;
+    }
     var flatHtml = sheet._flatHtml || "";
     var flatCls = sheet._flatCls || pageClasses(page);
     underlay = makeUnderlay(flatHtml, flatCls);
@@ -278,33 +282,51 @@
     var segs = wrap._segs;
     var n = segs.length;
     var bend = bendAmount(p);
-    var lift = bend * 10;
-    wrap.style.transform = "translate3d(0," + (-lift * 0.12) + "px," + lift + "px)";
+    var flat = flattenAmount(p);
+    var lift = bend * 16;
+    wrap.style.transform =
+      "translate3d(0," +
+      (-lift * 0.1) +
+      "px," +
+      (6 + lift) +
+      "px) rotateX(" +
+      (bend * -7) +
+      "deg)";
     var i;
-    var extra = bend * 5.4;
-    var base = total / n;
-    var shade = 0.06 + shadowAmount(p) * 0.4;
-    var glint = shadowAmount(p) * 0.5;
-    var thick = 0.28 + bend * 0.7;
+    var weights = [];
+    var sumW = 0;
     for (i = 0; i < n; i++) {
       var u = n === 1 ? 1 : i / (n - 1);
-      var rot = base + extra * (u - 0.5);
-      segs[i].node.style.transform = "translate3d(0,0,0.4px) rotateY(" + rot + "deg)";
+      var w = 1 + bend * (0.3 + 2.4 * u * u);
+      weights[i] = w;
+      sumW += w;
+    }
+    var sh = shadowAmount(p);
+    var shade = 0.05 + sh * 0.58;
+    var glint = sh * 0.72;
+    var thick = 0.2 + bend * 0.88 + sh * 0.12;
+    for (i = 0; i < n; i++) {
+      var spread = total * (weights[i] / sumW);
+      var rigid = i === 0 ? total : 0;
+      var rot = spread * (1 - flat) + rigid * flat;
+      segs[i].node.style.transform =
+        "translate3d(0,0," + (0.6 + bend * 1.1) + "px) rotateY(" + rot + "deg)";
       if (cheapPaint && i !== 0 && i !== n - 1) continue;
-      if (segs[i].shade) segs[i].shade.style.opacity = String(shade);
-      if (segs[i].glint) segs[i].glint.style.opacity = String(i === n - 1 ? glint : glint * 0.45);
+      var uShade = n === 1 ? 1 : i / (n - 1);
+      if (segs[i].shade) segs[i].shade.style.opacity = String(shade * (0.7 + 0.3 * uShade));
+      if (segs[i].glint) segs[i].glint.style.opacity = String(i === n - 1 ? glint : glint * 0.38);
       if (segs[i].thick) segs[i].thick.style.opacity = String(thick);
     }
   }
 
   function updateCast(p) {
     if (!cast) return;
-    cast.style.opacity = String(shadowAmount(p) * 0.46);
+    cast.style.opacity = String(shadowAmount(p) * 0.58);
   }
 
   function animate(dir, fromP, reverse) {
     if (!sheet) {
-      turning = false;
+      clearTurn();
       return;
     }
     stripFlip();
@@ -370,6 +392,7 @@
     turning = true;
     started = true;
     fadeOnly = false;
+    armLock();
     dragP = 0;
     dragFrom = album.page();
     var host = block();
@@ -399,12 +422,17 @@
       armedDir = dir;
       turning = true;
       fadeOnly = true;
+      armLock();
       return;
     }
-    if (!mountOutgoing()) return;
+    if (!mountOutgoing()) {
+      clearTurn();
+      return;
+    }
     armedDir = dir;
     turning = true;
     fadeOnly = false;
+    armLock();
     var host = block();
     if (host) host.classList.add(dir === "prev" ? "is-turning-prev" : "is-turning-next");
     if (abortTimer) window.clearTimeout(abortTimer);
@@ -420,7 +448,10 @@
       playFade();
       return;
     }
-    if (!sheet) return;
+    if (!sheet) {
+      clearTurn();
+      return;
+    }
     started = true;
     if (abortTimer) {
       window.clearTimeout(abortTimer);

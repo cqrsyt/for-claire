@@ -110,13 +110,19 @@
     if (!drawer) return;
     fillDrawer();
     drawer.hidden = false;
+    drawer.removeAttribute("aria-hidden");
+    drawer.style.pointerEvents = "";
+    drawer.style.display = "";
     var close = document.getElementById("chapter-drawer-close");
     if (close) close.focus();
   }
 
   function closeDrawer() {
     var drawer = document.getElementById("chapter-drawer");
-    if (drawer) drawer.hidden = true;
+    if (!drawer) return;
+    drawer.hidden = true;
+    drawer.setAttribute("aria-hidden", "true");
+    drawer.style.pointerEvents = "none";
   }
 
   function bindLikes() {
@@ -240,77 +246,136 @@
 
   var coverOpening = false;
   var coverRaf = 0;
+  var coverLockTimer = 0;
+  var COVER_LOCK_MS = 2500;
+
+  function coverEls() {
+    var book = document.querySelector(".cover-book-3d");
+    return {
+      book: book,
+      frame: book && book.querySelector(".cover-frame"),
+      leaf: book && book.querySelector(".cover-book-leaf")
+    };
+  }
+
+  function enterStory() {
+    var api = album();
+    if (api) api.open("story");
+  }
+
+  function resetCoverMotion() {
+    if (coverRaf) window.cancelAnimationFrame(coverRaf);
+    coverRaf = 0;
+    if (coverLockTimer) {
+      window.clearTimeout(coverLockTimer);
+      coverLockTimer = 0;
+    }
+    var els = coverEls();
+    if (els.book) {
+      els.book.classList.remove("is-opening");
+      els.book.style.transform = "";
+    }
+    if (els.frame) {
+      els.frame.style.animation = "";
+      els.frame.style.transition = "";
+      els.frame.style.transform = "";
+    }
+    if (els.leaf) els.leaf.style.filter = "";
+    coverOpening = false;
+  }
+
+  function finishCover(openStory) {
+    if (openStory) enterStory();
+    resetCoverMotion();
+  }
+
+  function armCoverLock() {
+    if (coverLockTimer) window.clearTimeout(coverLockTimer);
+    coverLockTimer = window.setTimeout(function () {
+      coverLockTimer = 0;
+      finishCover(true);
+    }, COVER_LOCK_MS);
+  }
 
   function playCoverReveal() {
-    var api = album();
-    if (!api) return;
     if (coverOpening) return;
+    var api = album();
+    if (!api) {
+      coverOpening = true;
+      armCoverLock();
+      ready(function () {
+        if (!coverOpening) return;
+        resetCoverMotion();
+        playCoverReveal();
+      });
+      return;
+    }
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      api.open("story");
+      enterStory();
       return;
     }
     coverOpening = true;
-    var book = document.querySelector(".cover-book-3d");
-    var frame = book && book.querySelector(".cover-frame");
-    var leaf = book && book.querySelector(".cover-book-leaf");
-    if (coverRaf) window.cancelAnimationFrame(coverRaf);
-    if (frame) {
-      frame.style.animation = "none";
-      frame.style.transition = "none";
-      frame.style.transform = "rotateY(0deg)";
-      void frame.offsetWidth;
-    }
-    if (book) book.classList.add("is-opening");
-    var start = performance.now();
-    var duration = 2100;
-    var opened = false;
-    function easeCover(t) {
-      if (t < 0.12) return (t / 0.12) * (t / 0.12) * 0.04;
-      var u = (t - 0.12) / 0.88;
-      return 0.04 + 0.96 * (1 - Math.pow(1 - u, 2.8));
-    }
-    function tick(now) {
-      var t = Math.min(1, (now - start) / duration);
-      var p = easeCover(t);
-      var angle = p * -162;
-      var lift = Math.sin(p * Math.PI) * 14;
-      var tilt = 6 + p * 10;
-      if (book) {
-        book.style.transform = "rotateX(" + (7 - p * 2) + "deg) rotateY(" + tilt + "deg)";
-      }
+    armCoverLock();
+    try {
+      var els = coverEls();
+      var book = els.book;
+      var frame = els.frame;
+      var leaf = els.leaf;
+      if (coverRaf) window.cancelAnimationFrame(coverRaf);
       if (frame) {
-        frame.style.transform =
-          "translate3d(0," +
-          -lift * 0.25 +
-          "px," +
-          lift +
-          "px) rotateY(" +
-          angle +
-          "deg)";
+        frame.style.animation = "none";
+        frame.style.transition = "none";
+        frame.style.transform = "rotateY(0deg)";
+        void frame.offsetWidth;
       }
-      if (leaf) leaf.style.filter = "brightness(" + (0.88 + p * 0.16) + ")";
-      if (!opened && t > 0.72) {
-        opened = true;
-        api.open("story");
+      if (book) book.classList.add("is-opening");
+      var start = performance.now();
+      var duration = 2100;
+      var opened = false;
+      function easeCover(t) {
+        if (t < 0.12) return (t / 0.12) * (t / 0.12) * 0.04;
+        var u = (t - 0.12) / 0.88;
+        return 0.04 + 0.96 * (1 - Math.pow(1 - u, 2.8));
       }
-      if (t < 1) {
-        coverRaf = window.requestAnimationFrame(tick);
-      } else {
-        coverRaf = 0;
-        if (book) {
-          book.classList.remove("is-opening");
-          book.style.transform = "";
+      function tick(now) {
+        if (!coverOpening) return;
+        try {
+          var t = Math.min(1, (now - start) / duration);
+          var p = easeCover(t);
+          var angle = p * -162;
+          var lift = Math.sin(p * Math.PI) * 14;
+          var tilt = 6 + p * 10;
+          if (book) {
+            book.style.transform = "rotateX(" + (7 - p * 2) + "deg) rotateY(" + tilt + "deg)";
+          }
+          if (frame) {
+            frame.style.transform =
+              "translate3d(0," +
+              -lift * 0.25 +
+              "px," +
+              lift +
+              "px) rotateY(" +
+              angle +
+              "deg)";
+          }
+          if (leaf) leaf.style.filter = "brightness(" + (0.88 + p * 0.16) + ")";
+          if (!opened && t > 0.72) {
+            opened = true;
+            enterStory();
+          }
+          if (t < 1) {
+            coverRaf = window.requestAnimationFrame(tick);
+          } else {
+            finishCover(!opened);
+          }
+        } catch (err) {
+          finishCover(true);
         }
-        if (frame) {
-          frame.style.animation = "";
-          frame.style.transition = "";
-          frame.style.transform = "";
-        }
-        if (leaf) leaf.style.filter = "";
-        coverOpening = false;
       }
+      coverRaf = window.requestAnimationFrame(tick);
+    } catch (err) {
+      finishCover(true);
     }
-    coverRaf = window.requestAnimationFrame(tick);
   }
 
   function bindCoverOpen() {
@@ -377,6 +442,8 @@
     var egg = document.getElementById("birthday-egg");
     if (!egg) return;
     egg.hidden = true;
+    egg.setAttribute("aria-hidden", "true");
+    egg.style.pointerEvents = "none";
     var hearts = egg.querySelector(".birthday-egg-hearts");
     if (hearts) hearts.innerHTML = "";
   }
@@ -416,6 +483,9 @@
     eggLang();
     spawnEggHearts();
     egg.hidden = false;
+    egg.setAttribute("aria-hidden", "false");
+    egg.style.pointerEvents = "";
+    egg.style.display = "";
     burst("♥", 18);
     burst("💙", 10);
     clearTimeout(fireEgg._t);
