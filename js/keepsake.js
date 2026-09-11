@@ -440,9 +440,15 @@
         }
         var albumBtn = e.target.closest && e.target.closest("[data-action=open-album]");
         if (!albumBtn) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
         albumBtn.classList.add("is-pressing");
         if (window.ClaireTurnClear) window.ClaireTurnClear();
-        warmupAlbum();
+        var api = album();
+        if (!api) return;
+        prefetchFirstPage();
+        api.go(0);
+        api.open("album");
       },
       true
     );

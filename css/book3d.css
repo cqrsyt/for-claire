@@ -185,6 +185,14 @@
   z-index: 280;
 }
 
+html:not([data-screen="album"]) #album-controls,
+html:not([data-screen="album"]) #album-controls .album-controls-inner,
+html:not([data-screen="album"]) #album-controls .ctrl-btn {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
 #album-controls .album-controls-inner,
 #album-controls .ctrl-btn {
   pointer-events: auto;
