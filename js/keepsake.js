@@ -219,6 +219,12 @@
       sketch.setAttribute("aria-hidden", "true");
       frame.insertBefore(sketch, frame.firstChild);
     }
+    if (!frame.querySelector(".cover-frame-back")) {
+      var back = document.createElement("div");
+      back.className = "cover-frame-back";
+      back.setAttribute("aria-hidden", "true");
+      frame.appendChild(back);
+    }
   }
 
   function watchCover() {
@@ -233,41 +239,9 @@
   }
 
   var coverOpening = false;
+  var coverRaf = 0;
 
-  function spawnInk(veil, x, y) {
-    veil.innerHTML = "";
-    var wash = document.createElement("div");
-    wash.className = "ink-wash";
-    wash.style.setProperty("--ix", x + "%");
-    wash.style.setProperty("--iy", y + "%");
-    veil.appendChild(wash);
-    var i;
-    for (i = 0; i < 9; i++) {
-      var blot = document.createElement("span");
-      blot.className = "ink-blot";
-      blot.style.setProperty("--x", x + (Math.random() * 18 - 9) + "%");
-      blot.style.setProperty("--y", y + (Math.random() * 16 - 8) + "%");
-      blot.style.setProperty("--s", 110 + Math.random() * 160 + "px");
-      blot.style.setProperty("--d", 1.55 + Math.random() * 0.7 + "s");
-      blot.style.setProperty("--delay", Math.random() * 0.28 + "s");
-      blot.style.setProperty("--sc", 5.2 + Math.random() * 3.4);
-      blot.style.setProperty("--dy", Math.random() * 36 - 18 + "px");
-      veil.appendChild(blot);
-    }
-    for (i = 0; i < 22; i++) {
-      var speck = document.createElement("span");
-      speck.className = "ink-speck";
-      speck.style.setProperty("--x", x + (Math.random() * 36 - 18) + "%");
-      speck.style.setProperty("--y", y + (Math.random() * 28 - 14) + "%");
-      speck.style.setProperty("--s", 5 + Math.random() * 12 + "px");
-      speck.style.setProperty("--delay", Math.random() * 0.45 + "s");
-      speck.style.setProperty("--dx", Math.random() * 90 - 45 + "px");
-      speck.style.setProperty("--dy", -20 - Math.random() * 70 + "px");
-      veil.appendChild(speck);
-    }
-  }
-
-  function playCoverReveal(evt) {
+  function playCoverReveal() {
     var api = album();
     if (!api) return;
     if (coverOpening) return;
@@ -278,13 +252,8 @@
     coverOpening = true;
     var book = document.querySelector(".cover-book-3d");
     var frame = book && book.querySelector(".cover-frame");
-    var veil = document.getElementById("ink-veil");
-    var x = 50;
-    var y = 58;
-    if (evt && typeof evt.clientX === "number") {
-      x = (evt.clientX / Math.max(window.innerWidth, 1)) * 100;
-      y = (evt.clientY / Math.max(window.innerHeight, 1)) * 100;
-    }
+    var leaf = book && book.querySelector(".cover-book-leaf");
+    if (coverRaf) window.cancelAnimationFrame(coverRaf);
     if (frame) {
       frame.style.animation = "none";
       frame.style.transition = "none";
@@ -292,30 +261,56 @@
       void frame.offsetWidth;
     }
     if (book) book.classList.add("is-opening");
-    if (frame) {
-      frame.style.transition = "transform 1.8s cubic-bezier(0.42, 0.02, 0.18, 1)";
-      frame.style.transform = "rotateY(-168deg)";
+    var start = performance.now();
+    var duration = 2100;
+    var opened = false;
+    function easeCover(t) {
+      if (t < 0.12) return (t / 0.12) * (t / 0.12) * 0.04;
+      var u = (t - 0.12) / 0.88;
+      return 0.04 + 0.96 * (1 - Math.pow(1 - u, 2.8));
     }
-    if (veil) {
-      spawnInk(veil, x, y);
-      veil.hidden = false;
-    }
-    window.setTimeout(function () {
-      api.open("story");
-    }, 1520);
-    window.setTimeout(function () {
-      if (veil) {
-        veil.hidden = true;
-        veil.innerHTML = "";
+    function tick(now) {
+      var t = Math.min(1, (now - start) / duration);
+      var p = easeCover(t);
+      var angle = p * -162;
+      var lift = Math.sin(p * Math.PI) * 14;
+      var tilt = 6 + p * 10;
+      if (book) {
+        book.style.transform = "rotateX(" + (7 - p * 2) + "deg) rotateY(" + tilt + "deg)";
       }
-      if (book) book.classList.remove("is-opening");
       if (frame) {
-        frame.style.animation = "";
-        frame.style.transition = "";
-        frame.style.transform = "";
+        frame.style.transform =
+          "translate3d(0," +
+          -lift * 0.25 +
+          "px," +
+          lift +
+          "px) rotateY(" +
+          angle +
+          "deg)";
       }
-      coverOpening = false;
-    }, 2550);
+      if (leaf) leaf.style.filter = "brightness(" + (0.88 + p * 0.16) + ")";
+      if (!opened && t > 0.72) {
+        opened = true;
+        api.open("story");
+      }
+      if (t < 1) {
+        coverRaf = window.requestAnimationFrame(tick);
+      } else {
+        coverRaf = 0;
+        if (book) {
+          book.classList.remove("is-opening");
+          book.style.transform = "";
+        }
+        if (frame) {
+          frame.style.animation = "";
+          frame.style.transition = "";
+          frame.style.transform = "";
+        }
+        if (leaf) leaf.style.filter = "";
+        coverOpening = false;
+      }
+    }
+    coverRaf = window.requestAnimationFrame(tick);
   }
 
   function bindCoverOpen() {
@@ -429,49 +424,10 @@
 
   var lastAlbumPage = -1;
 
-  function spawnMapleFlip(dir) {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    var root = document.getElementById("ambient-petals");
-    if (!root) return;
-    var sign = dir === "prev" ? -1 : 1;
-    var n = 10;
-    for (var i = 0; i < n; i++) {
-      var leaf = document.createElement("span");
-      leaf.className = "maple-leaf maple-leaf--flip maple-leaf--" + (i % 4);
-      leaf.style.left = (sign > 0 ? 46 : 28) + Math.random() * 26 + "%";
-      leaf.style.top = 22 + Math.random() * 42 + "%";
-      leaf.style.setProperty("--dx", sign * (70 + Math.random() * 160) + "px");
-      leaf.style.setProperty("--dy", 40 + Math.random() * 90 + "px");
-      leaf.style.setProperty("--rot", (Math.random() * 480 - 240) + "deg");
-      leaf.style.animationDuration = 1.15 + Math.random() * 0.75 + "s";
-      leaf.style.animationDelay = Math.random() * 0.18 + "s";
-      root.appendChild(leaf);
-      window.setTimeout(function (node) {
-        node.remove();
-      }, 2100, leaf);
-    }
-  }
-
   function noteAlbumPage() {
     var api = album();
     if (!api) return;
     var display = api.page() + 1;
-    if (lastAlbumPage !== -1 && lastAlbumPage !== display) {
-      var dir = display > lastAlbumPage ? "next" : "prev";
-      spawnMapleFlip(dir);
-      var book = document.getElementById("book-3d");
-      if (book) {
-        book.classList.remove("is-flipping-next", "is-flipping-prev");
-        void book.offsetWidth;
-        book.classList.add(dir === "next" ? "is-flipping-next" : "is-flipping-prev");
-        window.clearTimeout(book._flipT);
-        book._flipT = window.setTimeout(function () {
-          book.classList.remove("is-flipping-next", "is-flipping-prev");
-          var pageEl = document.getElementById("book-page");
-          if (pageEl) pageEl.classList.remove("flip-next", "flip-prev");
-        }, 1500);
-      }
-    }
     lastAlbumPage = display;
     if (display === 9) eggSeenNine = true;
     if (display === 22 && eggSeenNine) fireEgg();
