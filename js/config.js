@@ -11,3 +11,17 @@ window.SITE_CONFIG = {
   sitePasswordHash: "310f089018032ba50b85d43ed54f70c81cf8e8a4846b26bc2037274e56f1acd1",
   passwordStorageKey: "claire-album-unlocked",
 };
+
+window.claireOpenAlbum = function () {
+  var api = window.ClaireAlbum;
+  if (!api) return;
+  try {
+    if (window.ClaireTurnClear) window.ClaireTurnClear();
+  } catch (err) {}
+  try {
+    api.go(0);
+  } catch (err2) {}
+  try {
+    api.open("album");
+  } catch (err3) {}
+};

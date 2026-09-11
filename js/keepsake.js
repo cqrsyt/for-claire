@@ -183,13 +183,14 @@
   function elevateControls() {
     var bar = document.getElementById("album-controls");
     if (!bar) return;
-    bar.style.zIndex = "280";
+    var on = document.documentElement.getAttribute("data-screen") === "album";
+    bar.style.zIndex = on ? "280" : "0";
     var inner = bar.querySelector(".album-controls-inner");
-    if (inner) inner.style.pointerEvents = "auto";
+    if (inner) inner.style.pointerEvents = on ? "auto" : "none";
     bar.querySelectorAll(".ctrl-btn").forEach(function (btn) {
-      btn.style.pointerEvents = "auto";
+      btn.style.pointerEvents = on ? "auto" : "none";
       btn.style.position = "relative";
-      btn.style.zIndex = "282";
+      btn.style.zIndex = on ? "282" : "0";
     });
   }
 
@@ -429,81 +430,35 @@
   function bindCoverOpen() {
     if (document._coverOpenBound) return;
     document._coverOpenBound = true;
-    var lastOpen = 0;
+    var lastCover = 0;
 
-    function closestBtn(e, selector) {
+    function onCoverIntent(e) {
+      if (e.type === "pointerup" && e.pointerType === "mouse") return;
       var el = e.target;
       if (el && el.nodeType === 3) el = el.parentElement;
-      if (el && el.closest) {
-        var hit = el.closest(selector);
-        if (hit) return hit;
-      }
-      if (e.changedTouches && e.changedTouches[0]) {
-        var t = e.changedTouches[0];
-        el = document.elementFromPoint(t.clientX, t.clientY);
-        if (el && el.closest) return el.closest(selector);
-      }
-      return null;
-    }
-
-    function tooSoon() {
+      var storyBtn = el && el.closest && el.closest("[data-action=open-story]");
+      if (!storyBtn) return;
       var now = Date.now();
-      if (now - lastOpen < 480) return true;
-      lastOpen = now;
-      return false;
-    }
-
-    function openCoverNow(e) {
-      if (tooSoon()) {
-        if (e && e.cancelable) e.preventDefault();
-        if (e) e.stopImmediatePropagation();
-        return;
-      }
-      if (e) {
+      if (now - lastCover < 480) {
         if (e.cancelable) e.preventDefault();
         e.stopImmediatePropagation();
+        return;
       }
+      lastCover = now;
+      if (e.cancelable) e.preventDefault();
+      e.stopImmediatePropagation();
       playCoverReveal();
     }
 
-    function openAlbumNow(e, albumBtn) {
-      var api = album();
-      if (!api) return false;
-      if (tooSoon()) {
-        if (e && e.cancelable) e.preventDefault();
-        if (e) e.stopImmediatePropagation();
-        return true;
-      }
-      if (e) {
-        if (e.cancelable) e.preventDefault();
-        e.stopImmediatePropagation();
-      }
-      if (albumBtn) albumBtn.classList.add("is-pressing");
-      if (window.ClaireTurnClear) window.ClaireTurnClear();
-      prefetchFirstPage();
-      try {
-        api.go(0);
-      } catch (err) {}
-      try {
-        api.open("album");
-      } catch (err2) {}
-      return true;
-    }
+    document.addEventListener("pointerup", onCoverIntent, true);
+    document.addEventListener("click", onCoverIntent, true);
 
-    function onOpenIntent(e) {
-      if (e.type === "pointerup" && e.pointerType === "mouse") return;
-      var storyBtn = closestBtn(e, "[data-action=open-story]");
-      if (storyBtn) {
-        openCoverNow(e);
-        return;
-      }
-      var albumBtn = closestBtn(e, "[data-action=open-album]");
-      if (!albumBtn) return;
-      openAlbumNow(e, albumBtn);
-    }
-
-    document.addEventListener("pointerup", onOpenIntent, true);
-    document.addEventListener("click", onOpenIntent, true);
+    document.addEventListener("click", function (e) {
+      var el = e.target;
+      if (el && el.nodeType === 3) el = el.parentElement;
+      if (!(el && el.closest && el.closest("[data-action=open-album]"))) return;
+      if (window.claireOpenAlbum) window.claireOpenAlbum();
+    });
   }
 
   function bindBookTilt() {

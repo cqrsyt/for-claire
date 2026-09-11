@@ -336,6 +336,10 @@ html[data-screen="story"] #app {
   padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
 }
 
+html[data-screen="story"] #site-footer {
+  display: none;
+}
+
 html[data-screen="story"] body {
   overflow: hidden;
 }
@@ -413,18 +417,21 @@ html[data-screen="story"] body {
   flex: 0 0 auto;
   margin-top: 0.7rem;
   margin-bottom: 0;
+  padding-top: 0.35rem;
   padding-bottom: calc(0.35rem + env(safe-area-inset-bottom, 0px));
   position: relative;
-  z-index: 30;
+  z-index: 50;
   pointer-events: auto;
 }
 
-.story-actions .cover-open {
+.story-actions .cover-open,
+[data-action="open-album"] {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   position: relative;
-  z-index: 6;
+  z-index: 51;
   cursor: pointer;
+  pointer-events: auto !important;
 }
 
 .story-actions .cover-open.is-pressing {
