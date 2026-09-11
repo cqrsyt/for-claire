@@ -397,9 +397,26 @@ body {
   flex: 0 0 auto;
   margin-top: 0.7rem;
   margin-bottom: 0;
-  position: sticky;
-  bottom: 0;
-  z-index: 3;
+  position: relative;
+  z-index: 6;
+  pointer-events: auto;
+}
+
+.story-actions .cover-open {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  z-index: 6;
+}
+
+.story-actions .cover-open.is-pressing {
+  transform: translateY(1px);
+  box-shadow: 0 2px 10px var(--shadow);
+}
+
+.view.album,
+.view.album.active {
+  animation: none;
 }
 
 @media (max-width: 640px) {

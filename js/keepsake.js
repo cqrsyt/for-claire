@@ -275,6 +275,39 @@
   function enterStory() {
     var api = album();
     if (api) api.open("story");
+    warmupAlbum();
+  }
+
+  function prefetchFirstPage() {
+    var data = window.ALBUM_DATA;
+    if (!data || !data.chapters || !data.chapters[0] || !data.chapters[0].pages[0]) return;
+    var photos = data.chapters[0].pages[0].photos || [];
+    var base = (window.SITE_CONFIG && window.SITE_CONFIG.basePath) || "";
+    if (base && base !== "./") base = base.endsWith("/") ? base : base + "/";
+    else base = "";
+    photos.slice(0, 3).forEach(function (ph) {
+      if (!ph || !ph.src) return;
+      var src = String(ph.src).replace(/^\.\//, "").replace(/^\//, "");
+      src = src.replace(/(^|\/)photos\/(?!web\/|thumbs\/)(e\d+\.(?:jpe?g|png|webp))/i, "$1photos/web/$2");
+      var img = new Image();
+      img.decoding = "async";
+      img.src = base + src;
+    });
+  }
+
+  function warmupAlbum() {
+    prefetchFirstPage();
+    var run = function () {
+      var api = album();
+      if (!api) return;
+      var page = document.getElementById("book-page");
+      if (page && page.querySelector(".photo-stack") && api.page() === 0) return;
+      try {
+        api.go(0);
+      } catch (err) {}
+    };
+    if (window.requestIdleCallback) window.requestIdleCallback(run, { timeout: 800 });
+    else window.setTimeout(run, 160);
   }
 
   function resetCoverMotion() {
@@ -398,11 +431,18 @@
     document.addEventListener(
       "click",
       function (e) {
-        var btn = e.target.closest && e.target.closest("[data-action=open-story]");
-        if (!btn) return;
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        playCoverReveal(e);
+        var storyBtn = e.target.closest && e.target.closest("[data-action=open-story]");
+        if (storyBtn) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          playCoverReveal(e);
+          return;
+        }
+        var albumBtn = e.target.closest && e.target.closest("[data-action=open-album]");
+        if (!albumBtn) return;
+        albumBtn.classList.add("is-pressing");
+        if (window.ClaireTurnClear) window.ClaireTurnClear();
+        warmupAlbum();
       },
       true
     );

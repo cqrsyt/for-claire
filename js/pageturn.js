@@ -506,6 +506,10 @@
   }
 
   function onClickCapture(e) {
+    if (e.target.closest && e.target.closest("[data-action=open-album], .nav-pills [data-view=album]")) {
+      if (turning) clearTurn();
+      return;
+    }
     if (isControls(e.target) || pointOverControls(e.clientX, e.clientY)) {
       var keepGoing = e.target.closest && e.target.closest("#btn-toc, #btn-random, .chapter-jump");
       if (keepGoing) {
@@ -643,6 +647,10 @@
         stripFlip();
         return;
       }
+      if (!albumViewActive()) {
+        go.call(album, idx, hint);
+        return;
+      }
       var cur = album.page();
       if (idx !== cur) arm(idx > cur ? "next" : "prev");
       go.call(album, idx, hint);
@@ -690,6 +698,7 @@
   }
 
   function init() {
+    window.ClaireTurnClear = clearTurn;
     document.addEventListener("click", onClickCapture, true);
     document.addEventListener("keydown", onKeyCapture, true);
     bindSwipe();
