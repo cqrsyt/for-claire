@@ -74,6 +74,23 @@ body::after {
   100% { transform: scaleX(-1) rotate(6deg) translate(6px, 4px); }
 }
 
+/* Single faint rice-paper film. Opacity stays at or below 0.08. */
+#xuan-paper {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.08;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.46 0 0 0 0 0.42 0 0 0 0 0.36 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 240px 240px;
+  animation: xuanPaperDrift 32s ease-in-out infinite alternate;
+}
+
+@keyframes xuanPaperDrift {
+  from { background-position: 0 0; }
+  to { background-position: 18px 12px; }
+}
+
 #app {
   max-width: 1100px;
   padding: 0.85rem 1.5rem 2.75rem;
@@ -346,7 +363,8 @@ body::after {
   body::after,
   #ambient-petals,
   .ambient-petal,
-  .cover::before {
+  .cover::before,
+  #xuan-paper {
     animation: none !important;
   }
   .book-page.flip-next,

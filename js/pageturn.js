@@ -1,20 +1,33 @@
 /**
- * Physical 3D page turns.
- * Clone the current leaf before the album swaps HTML, then rotate a
- * two-sided sheet so the new page is revealed underneath.
+ * 3D page curl along the spine.
+ * Nested strips rotate so the leaf bends, the reverse shows past 90°,
+ * and the incoming page is already underneath.
  */
 (function () {
   "use strict";
 
-  var DURATION = 1180;
+  var DURATION = 720;
+  var FADE_MS = 220;
+  var ANGLE = -168;
+  var BX1 = 0.25;
+  var BY1 = 0;
+  var BX2 = 0.14;
+  var BY2 = 1;
   var turning = false;
   var started = false;
+  var fadeOnly = false;
+  var skipArm = false;
   var armedDir = null;
   var sheet = null;
   var underlay = null;
   var cast = null;
   var raf = 0;
   var abortTimer = 0;
+  var fadeTimer = 0;
+  var dragP = 0;
+  var dragFrom = 0;
+  var pageGo = null;
+  var cheapPaint = false;
 
   function reduce() {
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -34,23 +47,50 @@
     return !!(view && view.classList.contains("active"));
   }
 
-  /**
-   * Slow peel, accelerate through the fold, tiny overshoot, settle.
-   */
+  function cubic(t, a, b) {
+    var it = 1 - t;
+    return 3 * it * it * t * a + 3 * it * t * t * b + t * t * t;
+  }
+
+  function cubicD(t, a, b) {
+    var it = 1 - t;
+    return 3 * it * it * a + 6 * it * t * (b - a) + 3 * t * t * (1 - b);
+  }
+
   function easeTurn(t) {
     if (t <= 0) return 0;
     if (t >= 1) return 1;
-    if (t < 0.14) {
-      var a = t / 0.14;
-      return 0.045 * a * a;
+    var x = t;
+    var i;
+    for (i = 0; i < 6; i++) {
+      var z = cubic(x, BX1, BX2) - t;
+      var d = cubicD(x, BX1, BX2);
+      if (Math.abs(d) < 1e-5) break;
+      x -= z / d;
     }
-    if (t < 0.78) {
-      var b = (t - 0.14) / 0.64;
-      return 0.045 + 0.995 * (1 - Math.pow(1 - b, 2.55));
+    if (x < 0) x = 0;
+    else if (x > 1) x = 1;
+    var y = cubic(x, BY1, BY2);
+    if (y < 0) return 0;
+    if (y > 1) return 1;
+    return y;
+  }
+
+  function shadowAmount(p) {
+    if (p <= 0 || p >= 1) return 0;
+    if (p < 0.4) return Math.pow(p / 0.4, 1.35);
+    if (p <= 0.6) return 1;
+    return Math.pow((1 - p) / 0.4, 1.85);
+  }
+
+  function bendAmount(p) {
+    if (p <= 0 || p >= 1) return 0;
+    var mid = Math.sin(p * Math.PI);
+    if (p > 0.7) {
+      var k = (p - 0.7) / 0.3;
+      mid *= (1 - k) * (1 - k) * (1 - k);
     }
-    var c = (t - 0.78) / 0.22;
-    var over = 1.04 - 0.04 * (1 - Math.pow(1 - c, 2.1));
-    return over;
+    return mid;
   }
 
   function stripFlip() {
@@ -63,18 +103,9 @@
   }
 
   function placeOver(el, page, host) {
-    var x = 0;
-    var y = 0;
-    var node = page;
-    while (node && node !== host) {
-      x += node.offsetLeft;
-      y += node.offsetTop;
-      node = node.offsetParent;
-      if (node === document.body || node === document.documentElement) break;
-    }
     el.style.position = "absolute";
-    el.style.left = x + "px";
-    el.style.top = y + "px";
+    el.style.left = page.offsetLeft + "px";
+    el.style.top = page.offsetTop + "px";
     el.style.width = page.offsetWidth + "px";
     el.style.height = page.offsetHeight + "px";
     el.style.willChange = "transform";
@@ -83,48 +114,80 @@
   function pageClasses(page) {
     var extra = page.className || "book-page";
     if (extra.indexOf("book-page") === -1) extra += " book-page";
-    return extra.replace(/\bflip-next\b/g, "").replace(/\bflip-prev\b/g, "").replace(/\s+/g, " ").trim();
+    return extra.replace(/\bflip-next\b/g, "").replace(/\bflip-prev\b/g, "").replace(/\bis-fade-turn\b/g, "").replace(/\s+/g, " ").trim();
   }
 
-  function makeSheet(page, withGhost) {
-    var node = document.createElement("div");
-    node.className = "turn-sheet";
-    node.setAttribute("aria-hidden", "true");
+  function makeCurl(page) {
+    var n = 5;
+    var w = page.offsetWidth;
+    var h = page.offsetHeight;
+    var slice = w / n;
+    var html = page.innerHTML;
+    var cls = pageClasses(page);
+    var pad = window.getComputedStyle(page).padding;
+    var wrap = document.createElement("div");
+    wrap.className = "turn-curl";
+    wrap.setAttribute("aria-hidden", "true");
+    wrap.style.width = w + "px";
+    wrap.style.height = h + "px";
 
-    var front = document.createElement("div");
-    front.className = "turn-sheet-front " + pageClasses(page);
-    front.innerHTML = page.innerHTML;
+    var parent = wrap;
+    var segs = [];
+    var i;
+    for (i = 0; i < n; i++) {
+      var isLast = i === n - 1;
+      var sw = isLast ? w - slice * (n - 1) : slice;
+      var seg = document.createElement("div");
+      seg.className = "turn-seg" + (i === 0 ? " turn-seg--spine" : "") + (isLast ? " turn-seg--edge" : "");
+      seg.style.width = sw + "px";
+      seg.style.height = h + "px";
 
-    var shade = document.createElement("div");
-    shade.className = "turn-sheet-shade";
-    front.appendChild(shade);
+      var face = document.createElement("div");
+      face.className = "turn-seg-face";
 
-    var glint = document.createElement("div");
-    glint.className = "turn-sheet-glint";
-    front.appendChild(glint);
+      var inner = document.createElement("div");
+      inner.className = "turn-seg-inner " + cls;
+      inner.innerHTML = html;
+      inner.style.width = w + "px";
+      inner.style.height = h + "px";
+      inner.style.padding = pad;
+      inner.style.boxSizing = "border-box";
+      inner.style.transform = "translateX(" + (-i * slice) + "px)";
 
-    var back = document.createElement("div");
-    back.className = "turn-sheet-back";
-    if (withGhost) {
-      var ghost = document.createElement("div");
-      ghost.className = "turn-sheet-ghost";
-      ghost.innerHTML = page.innerHTML;
-      back.appendChild(ghost);
+      var shade = document.createElement("div");
+      shade.className = "turn-seg-shade";
+      var glint = document.createElement("div");
+      glint.className = "turn-seg-glint";
+
+      face.appendChild(inner);
+      face.appendChild(shade);
+      face.appendChild(glint);
+
+      var back = document.createElement("div");
+      back.className = "turn-seg-back";
+      var thick = document.createElement("div");
+      thick.className = "turn-seg-thickness";
+
+      seg.appendChild(face);
+      seg.appendChild(back);
+      seg.appendChild(thick);
+      parent.appendChild(seg);
+      parent = seg;
+      segs.push({ node: seg, shade: shade, glint: glint, thick: thick });
     }
-    var backShade = document.createElement("div");
-    backShade.className = "turn-sheet-shade turn-sheet-shade--back";
-    back.appendChild(backShade);
+    wrap._segs = segs;
+    wrap._n = n;
+    return wrap;
+  }
 
-    var crease = document.createElement("div");
-    crease.className = "turn-sheet-crease";
-
-    var edge = document.createElement("div");
-    edge.className = "turn-sheet-edge";
-
-    node.appendChild(front);
-    node.appendChild(back);
-    node.appendChild(crease);
-    node.appendChild(edge);
+  function makeUnderlay(html, cls) {
+    var node = document.createElement("div");
+    node.className = "turn-underlay";
+    node.setAttribute("aria-hidden", "true");
+    var inner = document.createElement("div");
+    inner.className = "turn-underlay-inner " + cls;
+    inner.innerHTML = html;
+    node.appendChild(inner);
     return node;
   }
 
@@ -151,8 +214,28 @@
     armedDir = null;
     turning = false;
     started = false;
+    fadeOnly = false;
     var host = block();
     if (host) host.classList.remove("is-turning", "is-turning-next", "is-turning-prev");
+  }
+
+  function playFade() {
+    stripFlip();
+    var page = document.getElementById("book-page");
+    if (page) {
+      page.classList.remove("is-fade-turn");
+      void page.offsetWidth;
+      page.classList.add("is-fade-turn");
+    }
+    if (fadeTimer) window.clearTimeout(fadeTimer);
+    fadeTimer = window.setTimeout(function () {
+      fadeTimer = 0;
+      if (page) page.classList.remove("is-fade-turn");
+      turning = false;
+      started = false;
+      armedDir = null;
+      fadeOnly = false;
+    }, FADE_MS + 40);
   }
 
   function mountOutgoing() {
@@ -160,7 +243,10 @@
     var host = block();
     if (!page || !host || sheet) return false;
     host.classList.add("is-turning");
-    sheet = makeSheet(page, true);
+    cheapPaint = window.innerWidth < 720;
+    sheet = makeCurl(page);
+    sheet._flatHtml = page.innerHTML;
+    sheet._flatCls = pageClasses(page);
     placeOver(sheet, page, host);
     host.appendChild(sheet);
     cast = makeCast();
@@ -173,126 +259,168 @@
     var page = document.getElementById("book-page");
     var host = block();
     if (!page || !host || !sheet) return;
-    sheet.classList.add("turn-underlay");
-    sheet.style.transform = "none";
-    underlay = sheet;
-    var incoming = makeSheet(page, true);
+    var flatHtml = sheet._flatHtml || "";
+    var flatCls = sheet._flatCls || pageClasses(page);
+    underlay = makeUnderlay(flatHtml, flatCls);
+    placeOver(underlay, page, host);
+    host.insertBefore(underlay, sheet);
+    if (sheet.parentNode) sheet.parentNode.removeChild(sheet);
+    var incoming = makeCurl(page);
     placeOver(incoming, page, host);
-    incoming.style.transform = "rotateY(-178deg)";
     host.appendChild(incoming);
     sheet = incoming;
+    poseCurl(sheet, ANGLE, 1);
     if (cast) placeOver(cast, page, host);
   }
 
-  function maple(dir) {
-    if (reduce()) return;
-    var root = document.getElementById("ambient-petals");
-    if (!root) return;
-    var sign = dir === "prev" ? -1 : 1;
+  function poseCurl(wrap, total, p) {
+    if (!wrap || !wrap._segs) return;
+    var segs = wrap._segs;
+    var n = segs.length;
+    var bend = bendAmount(p);
+    var lift = bend * 10;
+    wrap.style.transform = "translate3d(0," + (-lift * 0.12) + "px," + lift + "px)";
     var i;
-    for (i = 0; i < 3; i++) {
-      var leaf = document.createElement("span");
-      leaf.className = "maple-leaf maple-leaf--flip maple-leaf--" + ((i % 3) + 1);
-      leaf.style.left = 42 + Math.random() * 18 + "%";
-      leaf.style.top = 32 + Math.random() * 22 + "%";
-      leaf.style.setProperty("--dx", sign * (28 + Math.random() * 48) + "px");
-      leaf.style.setProperty("--dy", 18 + Math.random() * 36 + "px");
-      leaf.style.setProperty("--rot", Math.random() * 180 - 90 + "deg");
-      leaf.style.animationDuration = 1.05 + Math.random() * 0.4 + "s";
-      root.appendChild(leaf);
-      window.setTimeout(function (node) {
-        if (node && node.parentNode) node.parentNode.removeChild(node);
-      }, 1700, leaf);
+    var extra = bend * 5.4;
+    var base = total / n;
+    var shade = 0.06 + shadowAmount(p) * 0.4;
+    var glint = shadowAmount(p) * 0.5;
+    var thick = 0.28 + bend * 0.7;
+    for (i = 0; i < n; i++) {
+      var u = n === 1 ? 1 : i / (n - 1);
+      var rot = base + extra * (u - 0.5);
+      segs[i].node.style.transform = "translate3d(0,0,0.4px) rotateY(" + rot + "deg)";
+      if (cheapPaint && i !== 0 && i !== n - 1) continue;
+      if (segs[i].shade) segs[i].shade.style.opacity = String(shade);
+      if (segs[i].glint) segs[i].glint.style.opacity = String(i === n - 1 ? glint : glint * 0.45);
+      if (segs[i].thick) segs[i].thick.style.opacity = String(thick);
     }
   }
 
-  function lightSheet(node, angle) {
-    if (!node) return;
-    var a = Math.abs(angle);
-    var fold = Math.sin((Math.min(a, 178) / 178) * Math.PI);
-    var shade = node.querySelector(".turn-sheet-shade:not(.turn-sheet-shade--back)");
-    var backShade = node.querySelector(".turn-sheet-shade--back");
-    var glint = node.querySelector(".turn-sheet-glint");
-    var crease = node.querySelector(".turn-sheet-crease");
-    var edge = node.querySelector(".turn-sheet-edge");
-    if (shade) shade.style.opacity = String(0.06 + fold * 0.62);
-    if (backShade) backShade.style.opacity = String(0.1 + fold * 0.4);
-    if (glint) {
-      glint.style.opacity = String(fold * 0.42);
-      glint.style.transform = "translateX(" + (8 + fold * 28) + "%)";
-    }
-    if (crease) crease.style.opacity = String(0.1 + fold * 0.55);
-    if (edge) edge.style.opacity = String(0.15 + fold * 0.85);
+  function updateCast(p) {
+    if (!cast) return;
+    cast.style.opacity = String(shadowAmount(p) * 0.46);
   }
 
-  function animate(dir) {
+  function animate(dir, fromP, reverse) {
     if (!sheet) {
       turning = false;
       return;
     }
     stripFlip();
-    maple(dir);
+    if (fromP == null) fromP = 0;
+    var endP = reverse ? 0 : 1;
+    var span = Math.abs(endP - fromP);
+    if (span < 0.001) {
+      if (reverse) restoreDrag();
+      else {
+        poseCurl(sheet, dir === "prev" ? 0 : ANGLE, 1);
+        clearTurn();
+      }
+      return;
+    }
+    var dur = Math.max(200, DURATION * span);
     var start = performance.now();
     function tick(now) {
-      var t = Math.min(1, (now - start) / DURATION);
-      var p = easeTurn(t);
-      var angle = dir === "prev" ? -178 + p * 178 : p * -178;
-      var lift = Math.sin(p * Math.PI) * 18;
-      var flutter = Math.sin(p * Math.PI * 2.15) * (1 - p) * 1.65;
-      var skew = Math.sin(p * Math.PI) * 3.2;
-      sheet.style.transform =
-        "translate3d(0," +
-        -lift * 0.35 +
-        "px," +
-        lift * 1.25 +
-        "px) rotateY(" +
-        angle +
-        "deg) rotateX(" +
-        skew +
-        "deg) rotateZ(" +
-        flutter +
-        "deg)";
-      lightSheet(sheet, angle);
-      if (cast) {
-        var fold = Math.sin((Math.min(Math.abs(angle), 178) / 178) * Math.PI);
-        cast.style.opacity = String(fold * 0.55);
-        var spread = 18 + (1 - fold) * 70;
-        cast.style.background =
-          "linear-gradient(90deg, rgba(42, 34, 28, " +
-          (0.1 + fold * 0.32) +
-          ") 0, rgba(42, 34, 28, 0.06) " +
-          spread +
-          "%, transparent 100%)";
-      }
+      var t = Math.min(1, (now - start) / dur);
+      var p = fromP + (endP - fromP) * easeTurn(t);
+      if (t >= 1) p = endP;
+      var angle = dir === "prev" ? ANGLE + p * -ANGLE : p * ANGLE;
+      poseCurl(sheet, angle, p);
+      updateCast(p);
       if (t < 1) {
         raf = window.requestAnimationFrame(tick);
+      } else if (reverse) {
+        restoreDrag();
       } else {
+        poseCurl(sheet, dir === "prev" ? 0 : ANGLE, 1);
+        updateCast(0);
         clearTurn();
       }
     }
     raf = window.requestAnimationFrame(tick);
   }
 
-  function arm(dir) {
-    if (reduce() || turning) return;
-    if (lightboxOpen() || !albumViewActive()) return;
+  function restoreDrag() {
     var album = api();
-    if (!album) return;
-    if (dir === "next" && album.page() >= album.count() - 1) return;
-    if (dir === "prev" && album.page() <= 0) return;
+    if (album && pageGo && album.page() !== dragFrom) {
+      skipArm = true;
+      pageGo.call(album, dragFrom);
+      skipArm = false;
+    }
+    clearTurn();
+  }
+
+  function applyDragP(p) {
+    if (p < 0) p = 0;
+    if (p > 0.95) p = 0.95;
+    dragP = p;
+    var angle = armedDir === "prev" ? ANGLE + p * -ANGLE : p * ANGLE;
+    poseCurl(sheet, angle, p);
+    updateCast(p);
+  }
+
+  function startDrag(dir) {
+    if (turning || reduce() || lightboxOpen() || !albumViewActive()) return false;
+    if (!canTurn(dir)) return false;
+    var album = api();
+    if (!album || !pageGo) return false;
+    if (!mountOutgoing()) return false;
+    armedDir = dir;
+    turning = true;
+    started = true;
+    fadeOnly = false;
+    dragP = 0;
+    dragFrom = album.page();
+    var host = block();
+    if (host) host.classList.add(dir === "prev" ? "is-turning-prev" : "is-turning-next");
+    skipArm = true;
+    pageGo.call(album, dir === "next" ? dragFrom + 1 : dragFrom - 1);
+    skipArm = false;
+    stripFlip();
+    if (dir === "prev") mountIncoming();
+    applyDragP(0);
+    return true;
+  }
+
+  function canTurn(dir) {
+    var album = api();
+    if (!album) return false;
+    if (dir === "next" && album.page() >= album.count() - 1) return false;
+    if (dir === "prev" && album.page() <= 0) return false;
+    return true;
+  }
+
+  function arm(dir) {
+    if (turning) return;
+    if (lightboxOpen() || !albumViewActive()) return;
+    if (!canTurn(dir)) return;
+    if (reduce()) {
+      armedDir = dir;
+      turning = true;
+      fadeOnly = true;
+      return;
+    }
     if (!mountOutgoing()) return;
     armedDir = dir;
     turning = true;
+    fadeOnly = false;
     var host = block();
     if (host) host.classList.add(dir === "prev" ? "is-turning-prev" : "is-turning-next");
     if (abortTimer) window.clearTimeout(abortTimer);
     abortTimer = window.setTimeout(function () {
       if (armedDir && sheet && !started) clearTurn();
-    }, 220);
+    }, 360);
   }
 
   function beginArmed() {
-    if (!armedDir || !sheet || started) return;
+    if (!armedDir || started) return;
+    if (fadeOnly) {
+      started = true;
+      playFade();
+      return;
+    }
+    if (!sheet) return;
     started = true;
     if (abortTimer) {
       window.clearTimeout(abortTimer);
@@ -336,26 +464,78 @@
     stage._turnSwipe = true;
     var x0 = 0;
     var y0 = 0;
+    var tracking = false;
+    var dragging = false;
+    var pointerId = null;
+    var span = 200;
+
+    function progressFromDx(dx) {
+      if (armedDir === "next") return Math.max(0, Math.min(0.95, -dx / span));
+      return Math.max(0, Math.min(0.95, dx / span));
+    }
+
+    stage.addEventListener("pointerdown", function (e) {
+      if (turning || lightboxOpen() || !albumViewActive()) return;
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      if (e.target.closest && e.target.closest("button, a, input, .ctrl-btn")) return;
+      x0 = e.clientX;
+      y0 = e.clientY;
+      tracking = true;
+      dragging = false;
+      pointerId = e.pointerId;
+      var page = document.getElementById("book-page");
+      span = Math.max(140, ((page && page.offsetWidth) || 280) * 0.72);
+    });
+
     stage.addEventListener(
-      "touchstart",
+      "pointermove",
       function (e) {
-        if (e.touches.length === 1) {
-          x0 = e.touches[0].clientX;
-          y0 = e.touches[0].clientY;
+        if (!tracking || e.pointerId !== pointerId) return;
+        if (reduce()) return;
+        var dx = e.clientX - x0;
+        var dy = e.clientY - y0;
+        if (!dragging) {
+          if (Math.abs(dx) < 16 || Math.abs(dx) < Math.abs(dy) * 1.15) return;
+          if (!startDrag(dx < 0 ? "next" : "prev")) {
+            tracking = false;
+            return;
+          }
+          dragging = true;
+          try {
+            stage.setPointerCapture(e.pointerId);
+          } catch (err) {}
         }
+        e.preventDefault();
+        applyDragP(progressFromDx(dx));
       },
-      true
+      { passive: false }
     );
+
+    function finishPointer(e) {
+      if (!tracking || (e && e.pointerId !== pointerId)) return;
+      tracking = false;
+      pointerId = null;
+      if (!dragging) return;
+      dragging = false;
+      if (dragP >= 0.2) animate(armedDir, dragP, false);
+      else animate(armedDir, dragP, true);
+    }
+
+    stage.addEventListener("pointerup", finishPointer);
+    stage.addEventListener("pointercancel", finishPointer);
+
     stage.addEventListener(
       "touchend",
       function (e) {
-        if (turning) return;
-        var t = e.changedTouches[0];
-        if (!t) return;
-        var dx = t.clientX - x0;
-        var dy = t.clientY - y0;
-        if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy)) return;
-        arm(dx < 0 ? "next" : "prev");
+        if (reduce()) {
+          if (turning) return;
+          var t = e.changedTouches[0];
+          if (!t) return;
+          var dx = t.clientX - x0;
+          var dy = t.clientY - y0;
+          if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy)) return;
+          arm(dx < 0 ? "next" : "prev");
+        }
       },
       true
     );
@@ -368,7 +548,13 @@
     var go = album.go;
     var next = album.next;
     var prev = album.prev;
+    pageGo = go;
     album.go = function (idx, hint) {
+      if (skipArm) {
+        go.call(album, idx, hint);
+        stripFlip();
+        return;
+      }
       var cur = album.page();
       if (idx !== cur) arm(idx > cur ? "next" : "prev");
       go.call(album, idx, hint);
@@ -395,7 +581,7 @@
     page._turnWatch = true;
     var mo = new MutationObserver(function () {
       stripFlip();
-      if (armedDir && sheet) beginArmed();
+      if (armedDir) beginArmed();
     });
     mo.observe(page, { childList: true, subtree: false, attributes: true, attributeFilter: ["class"] });
   }
