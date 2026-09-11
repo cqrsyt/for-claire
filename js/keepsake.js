@@ -177,6 +177,20 @@
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") closeDrawer();
     });
+    elevateControls();
+  }
+
+  function elevateControls() {
+    var bar = document.getElementById("album-controls");
+    if (!bar) return;
+    bar.style.zIndex = "280";
+    var inner = bar.querySelector(".album-controls-inner");
+    if (inner) inner.style.pointerEvents = "auto";
+    bar.querySelectorAll(".ctrl-btn").forEach(function (btn) {
+      btn.style.pointerEvents = "auto";
+      btn.style.position = "relative";
+      btn.style.zIndex = "282";
+    });
   }
 
   function sprinklePaws() {
@@ -401,6 +415,7 @@
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     if (window.matchMedia("(pointer: coarse)").matches) return;
     stage.addEventListener("mousemove", function (e) {
+      if (e.target.closest && e.target.closest("#album-controls, .ctrl-btn")) return;
       var r = stage.getBoundingClientRect();
       var x = (e.clientX - r.left) / r.width - 0.5;
       var y = (e.clientY - r.top) / r.height - 0.5;
@@ -602,6 +617,7 @@
     bindCoverOpen();
     bindBookTilt();
     bindEasterEgg();
+    elevateControls();
     ready(function () {});
   }
 })();

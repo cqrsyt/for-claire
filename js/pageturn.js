@@ -21,7 +21,7 @@
   var abortTimer = 0;
   var fadeTimer = 0;
   var lockTimer = 0;
-  var TURN_LOCK_MS = 1200;
+  var TURN_LOCK_MS = 800;
   var dragP = 0;
   var dragFrom = 0;
   var pageGo = null;
@@ -462,20 +462,75 @@
     animate(armedDir);
   }
 
+  var ignoreClick = false;
+
   function navTarget(el) {
     if (!el || !el.closest) return null;
     return el.closest("#btn-next, #btn-last, #btn-prev, #btn-first, #btn-random, #btn-toc, .chapter-jump");
   }
 
+  function isControls(el) {
+    return !!(el && el.closest && el.closest("#album-controls, .ctrl-btn"));
+  }
+
+  function isPhotoHotspot(el) {
+    return !!(el && el.closest && el.closest("img, .photo-frame"));
+  }
+
+  function isPaper(el) {
+    return !!(el && el.closest && el.closest("#book-page, .book-3d-block, .book-3d-foreedge, .book-3d-thickness"));
+  }
+
+  function pointOverControls(x, y) {
+    var bar = document.getElementById("album-controls");
+    if (!bar || bar.style.display === "none") return false;
+    var inner = bar.querySelector(".album-controls-inner") || bar;
+    var r = inner.getBoundingClientRect();
+    return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+  }
+
+  function requestTurn(dir) {
+    if (turning || lightboxOpen() || !albumViewActive()) return;
+    if (!canTurn(dir)) return;
+    var album = api();
+    if (!album) return;
+    if (dir === "next") album.next();
+    else album.prev();
+  }
+
+  function turnFromPoint(clientX) {
+    var page = document.getElementById("book-page");
+    if (!page) return;
+    var r = page.getBoundingClientRect();
+    requestTurn(clientX >= r.left + r.width * 0.5 ? "next" : "prev");
+  }
+
   function onClickCapture(e) {
-    var nav = navTarget(e.target);
-    if (turning && nav) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
+    if (isControls(e.target) || pointOverControls(e.clientX, e.clientY)) {
+      var keepGoing = e.target.closest && e.target.closest("#btn-toc, #btn-random, .chapter-jump");
+      if (keepGoing) {
+        if (turning) clearTurn();
+        return;
+      }
+      var nav = navTarget(e.target);
+      if (turning && nav) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        return;
+      }
+      if (e.target.closest && e.target.closest("#btn-next, #btn-last")) arm("next");
+      else if (e.target.closest && e.target.closest("#btn-prev, #btn-first")) arm("prev");
       return;
     }
-    if (e.target.closest && e.target.closest("#btn-next, #btn-last")) arm("next");
-    else if (e.target.closest && e.target.closest("#btn-prev, #btn-first")) arm("prev");
+    if (turning) return;
+    if (!albumViewActive() || lightboxOpen()) return;
+    if (ignoreClick) {
+      ignoreClick = false;
+      return;
+    }
+    if (isPhotoHotspot(e.target)) return;
+    if (!isPaper(e.target)) return;
+    turnFromPoint(e.clientX);
   }
 
   function onKeyCapture(e) {
@@ -508,7 +563,8 @@
     stage.addEventListener("pointerdown", function (e) {
       if (turning || lightboxOpen() || !albumViewActive()) return;
       if (e.pointerType === "mouse" && e.button !== 0) return;
-      if (e.target.closest && e.target.closest("button, a, input, .ctrl-btn")) return;
+      if (e.target.closest && e.target.closest("button, a, input, .ctrl-btn, #album-controls")) return;
+      if (pointOverControls(e.clientX, e.clientY)) return;
       x0 = e.clientX;
       y0 = e.clientY;
       tracking = true;
@@ -548,6 +604,7 @@
       pointerId = null;
       if (!dragging) return;
       dragging = false;
+      ignoreClick = true;
       if (dragP >= 0.2) animate(armedDir, dragP, false);
       else animate(armedDir, dragP, true);
     }

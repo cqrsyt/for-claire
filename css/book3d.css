@@ -164,11 +164,32 @@
 
 .book-stage {
   position: relative;
+  z-index: 1;
   perspective: 2000px;
   overflow: visible;
   padding: 1.4rem 0.5rem 2.4rem;
   min-height: 460px;
   touch-action: pan-y;
+}
+
+#book-3d.book-3d {
+  z-index: 1;
+}
+
+#ambient-petals {
+  z-index: 0;
+  pointer-events: none;
+}
+
+#album-controls {
+  z-index: 280;
+}
+
+#album-controls .album-controls-inner,
+#album-controls .ctrl-btn {
+  pointer-events: auto;
+  position: relative;
+  z-index: 281;
 }
 
 .book-sketches {
