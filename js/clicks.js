@@ -1,6 +1,7 @@
 /**
- * First-registered capture handler so cover/story/album controls
- * still work when later scripts stop the event.
+ * First-registered capture handler so album/story nav still works
+ * when later scripts stop the event.
+ * Cover "翻开看看" is left to keepsake.js so the book-open animation plays.
  */
 (function () {
   "use strict";
@@ -24,13 +25,14 @@
     if (el.nodeType === 3) el = el.parentElement;
     if (!el || !el.closest) return;
     if (el.closest("#password-gate")) return;
+    if (el.closest("[data-action=open-story]")) return;
 
     if (el.closest("#btn-see-us") || el.closest(".nav-pills [data-view=album]")) {
       if (window.claireOpenAlbum) window.claireOpenAlbum();
       else go("album");
       return;
     }
-    if (el.closest("[data-action=open-story]") || el.closest(".nav-pills [data-view=story]")) {
+    if (el.closest(".nav-pills [data-view=story]")) {
       go("story");
       return;
     }
