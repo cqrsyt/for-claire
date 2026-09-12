@@ -261,6 +261,7 @@
   }
 
   var coverOpening = false;
+  var coverOpenedAt = 0;
   var coverRaf = 0;
   var coverLockTimer = 0;
   var COVER_LOCK_MS = 2500;
@@ -278,6 +279,7 @@
     var api = album();
     if (api) api.open("story");
     warmupAlbum();
+    coverOpening = false;
   }
 
   function prefetchFirstPage() {
@@ -336,6 +338,7 @@
   function finishCover(openStory) {
     if (openStory) enterStory();
     resetCoverMotion();
+    coverOpening = false;
   }
 
   function armCoverLock() {
@@ -352,6 +355,7 @@
     var api = album();
     if (!api) {
       coverOpening = true;
+      coverOpenedAt = Date.now();
       armCoverLock();
       ready(function () {
         if (!coverOpening) return;
@@ -365,6 +369,7 @@
       return;
     }
     coverOpening = true;
+    coverOpenedAt = Date.now();
     armCoverLock();
     try {
       var els = coverEls();
@@ -440,6 +445,17 @@
       if (e.type === "pointerup" && e.pointerType === "mouse") return;
       var storyBtn = el && el.closest && el.closest("[data-action=open-story]");
       if (!storyBtn) return;
+      if (coverOpening) {
+        if (Date.now() - coverOpenedAt > 2500) {
+          coverOpening = false;
+          resetCoverMotion();
+          var stuckApi = album();
+          if (stuckApi) stuckApi.open("story");
+        }
+        if (e.cancelable) e.preventDefault();
+        e.stopImmediatePropagation();
+        return;
+      }
       var now = Date.now();
       if (now - lastCover < 480) {
         if (e.cancelable) e.preventDefault();

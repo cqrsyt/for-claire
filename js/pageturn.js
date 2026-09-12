@@ -219,9 +219,25 @@
     }, TURN_LOCK_MS);
   }
 
-  function clearTurn() {
+  function resetTurn() {
+    turning = false;
+    ignoreClick = false;
+    dragP = 0;
+    armedDir = null;
     if (raf) window.cancelAnimationFrame(raf);
     raf = 0;
+    document.querySelectorAll(".turn-curl, .turn-underlay, .turn-cast, .turn-seg").forEach(function (node) {
+      if (node.parentNode) node.parentNode.removeChild(node);
+    });
+    document.querySelectorAll(".is-turning, .is-turning-next, .is-turning-prev, .is-tilting").forEach(function (node) {
+      node.classList.remove("is-turning", "is-turning-next", "is-turning-prev", "is-tilting");
+    });
+    sheet = null;
+    underlay = null;
+    cast = null;
+  }
+
+  function clearTurn() {
     if (abortTimer) {
       window.clearTimeout(abortTimer);
       abortTimer = 0;
@@ -234,18 +250,9 @@
       window.clearTimeout(lockTimer);
       lockTimer = 0;
     }
-    if (sheet && sheet.parentNode) sheet.parentNode.removeChild(sheet);
-    if (underlay && underlay.parentNode) underlay.parentNode.removeChild(underlay);
-    if (cast && cast.parentNode) cast.parentNode.removeChild(cast);
-    sheet = null;
-    underlay = null;
-    cast = null;
-    armedDir = null;
-    turning = false;
+    resetTurn();
     started = false;
     fadeOnly = false;
-    var host = block();
-    if (host) host.classList.remove("is-turning", "is-turning-next", "is-turning-prev");
     document.body.classList.remove("is-page-turning");
     releaseFollow();
   }
@@ -773,7 +780,11 @@
     }, 120);
   }
 
+  window.ClaireTurnReset = resetTurn;
+  window.ClaireTurnClear = clearTurn;
+
   function init() {
+    window.ClaireTurnReset = resetTurn;
     window.ClaireTurnClear = clearTurn;
     document.addEventListener("click", onClickCapture, true);
     document.addEventListener("keydown", onKeyCapture, true);
