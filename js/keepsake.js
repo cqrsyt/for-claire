@@ -436,6 +436,7 @@
   function bindCoverOpen() {
     if (document._coverOpenBound) return;
     document._coverOpenBound = true;
+    var lastCover = 0;
 
     function onCoverIntent(e) {
       var el = e.target;
@@ -444,10 +445,27 @@
       if (e.type === "pointerup" && e.pointerType === "mouse") return;
       var storyBtn = el && el.closest && el.closest("[data-action=open-story]");
       if (!storyBtn) return;
-      coverOpening = false;
-      resetCoverMotion();
-      var api = album();
-      if (api) api.open("story");
+      if (coverOpening) {
+        if (Date.now() - coverOpenedAt > 2500) {
+          coverOpening = false;
+          resetCoverMotion();
+          var stuckApi = album();
+          if (stuckApi) stuckApi.open("story");
+        }
+        if (e.cancelable) e.preventDefault();
+        e.stopImmediatePropagation();
+        return;
+      }
+      var now = Date.now();
+      if (now - lastCover < 480) {
+        if (e.cancelable) e.preventDefault();
+        e.stopImmediatePropagation();
+        return;
+      }
+      lastCover = now;
+      if (e.cancelable) e.preventDefault();
+      e.stopImmediatePropagation();
+      playCoverReveal();
     }
 
     document.addEventListener("pointerup", onCoverIntent, true);
