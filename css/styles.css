@@ -321,26 +321,24 @@ body {
   padding: 0.6rem 0 0.8rem;
   min-height: 0;
   flex: 1 1 auto;
-  overflow: hidden;
+  overflow: visible;
+}
+
+html[data-screen="story"] body,
+html[data-screen="story"] #app,
+html[data-screen="story"] #view-story {
+  height: auto;
+  max-height: none;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 html[data-screen="story"] #app {
-  height: 100vh;
-  height: 100dvh;
-  height: 100svh;
-  max-height: 100vh;
-  max-height: 100dvh;
-  max-height: 100svh;
-  overflow: hidden;
   padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
 }
 
 html[data-screen="story"] #site-footer {
   display: none;
-}
-
-html[data-screen="story"] body {
-  overflow: hidden;
 }
 
 .story-shell {
@@ -408,6 +406,12 @@ html[data-screen="story"] body {
   font-size: 1.05rem;
   color: var(--rose);
   line-height: 1.8;
+}
+
+.story-para,
+.story-title,
+.story-dedication {
+  opacity: 1 !important;
 }
 
 #btn-see-us {

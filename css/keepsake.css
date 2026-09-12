@@ -401,6 +401,18 @@ body.claire-blue {
   40% { opacity: 0.55; }
 }
 
+@media (max-width: 700px) {
+  .masthead {
+    padding: 0 0 0.1rem;
+  }
+  .masthead-banner {
+    padding: 0.05rem 0.35rem 0;
+  }
+  #claire-likes {
+    display: none;
+  }
+}
+
 @media (max-width: 640px) {
   .masthead-kicker { letter-spacing: 0.08em; font-size: 0.7rem; }
   .ctrl-btn { width: 2.2rem; height: 2.2rem; }

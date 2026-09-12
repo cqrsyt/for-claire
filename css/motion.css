@@ -74,19 +74,6 @@ body {
   50% { box-shadow: 0 8px 26px rgba(127, 159, 196, 0.35); }
 }
 
-.story-para {
-  animation: riseIn 0.75s ease both;
-}
-.story-para:nth-child(1) { animation-delay: 0.05s; }
-.story-para:nth-child(2) { animation-delay: 0.16s; }
-.story-para:nth-child(3) { animation-delay: 0.27s; }
-.story-para:nth-child(4) { animation-delay: 0.38s; }
-.story-para:nth-child(5) { animation-delay: 0.49s; }
-
-.story-dedication {
-  animation: riseIn 0.9s ease 0.55s both;
-}
-
 @keyframes riseIn {
   from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: translateY(0); }
@@ -216,8 +203,6 @@ body.is-page-turning .book-3d-block .book-page {
   .cover-avatar-heart,
   .cover-open,
   .password-btn,
-  .story-para,
-  .story-dedication,
   .chapter-title,
   .chapter-intro,
   .photo-card,
