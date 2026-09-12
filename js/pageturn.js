@@ -587,7 +587,7 @@
 
   function onClickCapture(e) {
     if (!albumViewActive()) return;
-    if (e.target.closest && e.target.closest("#btn-see-us, .story-actions, [data-action=open-album], .nav-pills [data-view=album]")) {
+    if (e.target.closest && e.target.closest("#btn-see-us, .story-actions, [data-action=open-album], .nav-pills, .lang-toggle, .like-btn, #lightbox, #chapter-drawer, #password-gate")) {
       if (turning) clearTurn();
       return;
     }
@@ -597,11 +597,7 @@
         if (turning) clearTurn();
         return;
       }
-      var nav = navTarget(e.target);
-      if (turning && nav) {
-        clearTurn();
-        return;
-      }
+      if (turning) clearTurn();
       if (e.target.closest && e.target.closest("#btn-next, #btn-last")) arm("next");
       else if (e.target.closest && e.target.closest("#btn-prev, #btn-first")) arm("prev");
       return;
