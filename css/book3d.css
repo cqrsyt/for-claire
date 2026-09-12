@@ -959,3 +959,19 @@ html[data-screen="album"] #album-controls .album-controls-inner,
 html[data-screen="album"] #album-controls .ctrl-btn {
   pointer-events: auto !important;
 }
+
+.cover-book-3d,
+.cover-book-spine,
+.cover-book-leaf,
+.cover-book-pages,
+.cover-sketch {
+  pointer-events: none !important;
+}
+.cover-open,
+[data-action="open-story"],
+.nav-pills,
+.nav-pills button,
+.lang-toggle,
+.lang-toggle button {
+  pointer-events: auto !important;
+}
