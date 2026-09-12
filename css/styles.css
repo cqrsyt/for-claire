@@ -162,7 +162,8 @@ body {
   justify-content: flex-end;
 }
 
-.nav-pills button {
+.nav-pills button,
+.nav-pills a {
   border: 1px solid transparent;
   background: rgba(255, 253, 249, 0.7);
   color: var(--ink-soft);
@@ -174,6 +175,15 @@ body {
   font-family: inherit;
 }
 
+.nav-pills a {
+  text-decoration: none;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.nav-pills a.active,
 .nav-pills button.active {
   border-color: var(--blush-deep);
   background: var(--paper);
@@ -182,7 +192,8 @@ body {
 }
 
 @media (max-width: 559px) {
-  .nav-pills button {
+  .nav-pills button,
+  .nav-pills a {
     padding: 0.3rem 0.5rem;
     font-size: 0.7rem;
   }
@@ -432,12 +443,19 @@ html[data-screen="story"] #site-footer {
   min-width: 12rem;
   min-height: 48px;
   cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  align-items: center;
+  justify-content: center;
 }
 
 html[data-screen="story"] #btn-see-us {
   display: flex !important;
   align-items: center;
   justify-content: center;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
 
 html[data-screen="story"] #btn-see-us:hover,
