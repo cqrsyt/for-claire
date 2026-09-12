@@ -324,17 +324,22 @@ body {
   overflow: visible;
 }
 
-html[data-screen="story"] body,
-html[data-screen="story"] #app,
-html[data-screen="story"] #view-story {
+html[data-screen="story"] body {
   height: auto;
   max-height: none;
   overflow-x: hidden;
   overflow-y: auto;
 }
 
+html[data-screen="story"] #app,
+html[data-screen="story"] #view-story {
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
 html[data-screen="story"] #app {
-  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
 }
 
 html[data-screen="story"] #site-footer {
@@ -345,8 +350,9 @@ html[data-screen="story"] #site-footer {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  flex: 1;
-  max-height: 100%;
+  flex: 0 1 auto;
+  max-height: none;
+  overflow: visible;
 }
 
 .story-card {
@@ -356,10 +362,9 @@ html[data-screen="story"] #site-footer {
   padding: 2rem 1.5rem;
   box-shadow: 0 8px 32px var(--shadow);
   position: relative;
-  overflow: auto;
-  flex: 1 1 auto;
-  min-height: 0;
-  -webkit-overflow-scrolling: touch;
+  overflow: visible;
+  flex: 0 1 auto;
+  min-height: auto;
 }
 
 .story-card::before {

@@ -15,7 +15,6 @@
       open();
     };
     btn.ontouchend = function (e) {
-      if (e && e.cancelable) e.preventDefault();
       if (e) e.stopPropagation();
       open();
     };
