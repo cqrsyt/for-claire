@@ -1,0 +1,32 @@
+/* In-flow story CTA. Do not float it over the letter. */
+.story-actions {
+  display: none;
+  justify-content: center;
+  padding: 4px 0 28px;
+  pointer-events: auto;
+  position: relative;
+  z-index: 5;
+}
+
+html[data-screen="story"] .story-actions {
+  display: flex;
+}
+
+#btn-see-us {
+  position: static !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  z-index: 5 !important;
+  pointer-events: auto !important;
+  display: none;
+}
+
+html[data-screen="story"] #btn-see-us {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
