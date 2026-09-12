@@ -6,23 +6,17 @@
     <meta name="description" content="写给秋然 / For Claire — 四百多天 · Four Hundred Days" />
     <meta name="theme-color" content="#e8f0fa" />
     <title>写给秋然 · 四百多天 | For Claire</title>
-    <!--
-      Deploy note: all asset URLs below are relative, so the site works at
-      domain root (Cloudflare Pages / custom domain) OR under /for-claire/
-      (GitHub Pages project site). For photo paths in data/album.js, set
-      window.SITE_CONFIG.basePath in js/config.js if assets break in a subpath.
-    -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Ma+Shan+Zheng&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=46" />
-    <link rel="stylesheet" href="css/polish.css?v=46" />
-    <link rel="stylesheet" href="css/motion.css?v=46" />
-    <link rel="stylesheet" href="css/keepsake.css?v=46" />
-    <link rel="stylesheet" href="css/book3d.css?v=46" />
+    <link rel="stylesheet" href="css/styles.css?v=47" />
+    <link rel="stylesheet" href="css/polish.css?v=47" />
+    <link rel="stylesheet" href="css/motion.css?v=47" />
+    <link rel="stylesheet" href="css/keepsake.css?v=47" />
+    <link rel="stylesheet" href="css/book3d.css?v=47" />
   </head>
   <body class="locked">
     <div id="password-gate" class="password-gate" aria-hidden="false">
@@ -91,17 +85,14 @@
         <div class="masthead-lace masthead-lace--bottom" aria-hidden="true"></div>
       </div>
 
-      <!-- Cover -->
       <section id="view-cover" class="view cover active" data-view="cover" aria-label="cover"></section>
 
-      <!-- Our Story -->
       <section id="view-story" class="view story" data-view="story" aria-label="story">
         <div class="story-shell">
           <div id="story-copy" class="story-card"></div>
         </div>
       </section>
 
-      <!-- Album -->
       <section id="view-album" class="view album" data-view="album" aria-label="album">
         <div id="chapter-header" class="chapter-header"></div>
         <div id="book-stage" class="book-stage">
@@ -171,7 +162,6 @@
       </div>
     </div>
 
-    <!-- Lightbox -->
     <div id="lightbox" class="lightbox" aria-hidden="true" role="dialog" aria-modal="true">
       <button type="button" id="lightbox-close" class="lightbox-close" aria-label="Close">×</button>
       <div class="lightbox-inner">
@@ -180,14 +170,15 @@
       </div>
     </div>
 
-    <a href="#album" id="btn-see-us" class="cover-open zh">去看看我们</a>
-    <script src="js/config.js?v=46"></script>
-    <script src="js/sha256.js?v=46"></script>
+    <button type="button" id="btn-see-us" class="cover-open zh">去看看我们</button>
+    <script src="js/config.js?v=47"></script>
+    <script src="js/clicks.js?v=47"></script>
+    <script src="js/sha256.js?v=47"></script>
     <script src="data/album.js?v=28"></script>
-    <script src="js/app.js?v=46"></script>
-    <script src="js/petals.js?v=46"></script>
-    <script src="js/keepsake.js?v=46"></script>
-    <script src="js/pageturn.js?v=46"></script>
-    <script src="js/see-us.js?v=46"></script>
+    <script src="js/app.js?v=47"></script>
+    <script src="js/petals.js?v=47"></script>
+    <script src="js/keepsake.js?v=47"></script>
+    <script src="js/pageturn.js?v=47"></script>
+    <script src="js/see-us.js?v=47"></script>
   </body>
 </html>

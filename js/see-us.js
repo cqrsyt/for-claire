@@ -3,20 +3,8 @@
     var btn = document.getElementById("btn-see-us");
     if (!btn) return;
     if (btn.parentElement !== document.body) document.body.appendChild(btn);
-    var lock = 0;
-    function open() {
-      var now = Date.now();
-      if (now - lock < 500) return;
-      lock = now;
-      if (typeof window.claireOpenAlbum === "function") window.claireOpenAlbum();
-    }
-    btn.onclick = function (e) {
-      if (e) e.stopPropagation();
-      open();
-    };
-    btn.ontouchend = function (e) {
-      if (e) e.stopPropagation();
-      open();
+    btn.onclick = function () {
+      if (window.claireOpenAlbum) window.claireOpenAlbum();
     };
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind);
