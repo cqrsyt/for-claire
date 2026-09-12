@@ -959,3 +959,15 @@ html[data-screen="album"] #album-controls .album-controls-inner,
 html[data-screen="album"] #album-controls .ctrl-btn {
   pointer-events: auto !important;
 }
+
+#view-cover .cover-book-3d,
+#view-cover .cover-book-spine,
+#view-cover .cover-book-leaf,
+#view-cover .cover-book-pages,
+#view-cover .cover-sketch {
+  pointer-events: none;
+}
+#view-cover .cover-open,
+#view-cover [data-action="open-story"] {
+  pointer-events: auto;
+}
