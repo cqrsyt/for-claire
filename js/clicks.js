@@ -28,16 +28,22 @@
     if (el.closest("[data-action=open-story]")) return;
 
     if (el.closest("#btn-see-us") || el.closest(".nav-pills [data-view=album]")) {
+      if (window.ClaireCoverReset) window.ClaireCoverReset();
       if (window.claireOpenAlbum) window.claireOpenAlbum();
       else go("album");
+      e.stopImmediatePropagation();
       return;
     }
     if (el.closest(".nav-pills [data-view=story]")) {
+      if (window.ClaireCoverReset) window.ClaireCoverReset();
       go("story");
+      e.stopImmediatePropagation();
       return;
     }
     if (el.closest(".nav-pills [data-view=cover]")) {
+      if (window.ClaireCoverReset) window.ClaireCoverReset();
       go("cover");
+      e.stopImmediatePropagation();
     }
   }
 

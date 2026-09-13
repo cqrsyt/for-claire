@@ -893,42 +893,44 @@ html[data-screen="story"] #ambient-petals *,
 html[data-screen="story"] #claire-burst,
 html[data-screen="story"] #claire-burst *,
 html[data-screen="story"] #xuan-paper,
-html[data-screen="story"] #xuan-paper *,
-#view-story.active ~ #view-album #album-controls,
-#view-story.active ~ #view-album #album-controls *,
-#view-story.active ~ #view-album #book-stage,
-#view-story.active ~ #view-album #book-stage * {
+html[data-screen="story"] #xuan-paper * {
   pointer-events: none !important;
 }
 
-html[data-screen="story"] #album-controls,
-#view-story.active ~ #view-album #album-controls {
+html[data-screen="story"] #album-controls {
   display: none !important;
   visibility: hidden !important;
 }
 
+html[data-screen="album"] #view-cover,
+html[data-screen="album"] #view-story {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+html[data-screen="album"] #view-album {
+  display: flex !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+html[data-screen="album"] #album-controls {
+  display: flex !important;
+  visibility: visible !important;
+  pointer-events: none !important;
+}
+
+html[data-screen="album"] #album-controls .album-controls-inner,
+html[data-screen="album"] #album-controls .ctrl-btn {
+  pointer-events: auto !important;
+}
+
 #btn-see-us {
-  display: none;
-  position: fixed;
-  left: 50%;
-  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
-  transform: translateX(-50%);
-  z-index: 2147483000;
   pointer-events: auto !important;
   touch-action: manipulation;
   min-width: 12rem;
   min-height: 48px;
-}
-
-html[data-screen="story"] #btn-see-us {
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-}
-
-html[data-screen="story"] #btn-see-us:hover,
-html[data-screen="story"] #btn-see-us:focus-visible {
-  transform: translateX(-50%) translateY(-2px);
 }
 
 #ambient-petals,
@@ -945,8 +947,6 @@ html[data-screen="story"] #btn-see-us:focus-visible {
   z-index: 10;
 }
 #btn-see-us {
-  position: fixed !important;
-  z-index: 2147483647 !important;
   pointer-events: auto !important;
 }
 #btn-see-us,
@@ -960,14 +960,23 @@ html[data-screen="album"] #album-controls .ctrl-btn {
   pointer-events: auto !important;
 }
 
+#view-cover {
+  isolation: isolate;
+  position: relative;
+  z-index: 1;
+}
+
 #view-cover .cover-book-3d,
 #view-cover .cover-book-spine,
 #view-cover .cover-book-leaf,
 #view-cover .cover-book-pages,
-#view-cover .cover-sketch {
-  pointer-events: none;
+#view-cover .cover-sketch,
+#view-cover .cover-frame-back {
+  pointer-events: none !important;
 }
 #view-cover .cover-open,
 #view-cover [data-action="open-story"] {
-  pointer-events: auto;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 4;
 }

@@ -20,6 +20,7 @@ body.claire-blue {
   position: sticky;
   top: 0;
   z-index: 120;
+  pointer-events: auto;
   margin: 0 -0.35rem 0.35rem;
   padding: 0.15rem 0 0.45rem;
   background:
@@ -132,6 +133,9 @@ body.claire-blue {
   padding: 0.48rem 0.9rem;
   font-size: 0.82rem;
   border: 1px solid rgba(158, 182, 212, 0.45);
+  pointer-events: auto;
+  position: relative;
+  z-index: 121;
 }
 
 .claire-likes {

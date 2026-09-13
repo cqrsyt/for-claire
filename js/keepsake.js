@@ -275,11 +275,14 @@
     };
   }
 
+  function currentScreen() {
+    return document.documentElement.getAttribute("data-screen") || "cover";
+  }
+
   function enterStory() {
     var api = album();
     if (api) api.open("story");
     warmupAlbum();
-    coverOpening = false;
   }
 
   function prefetchFirstPage() {
@@ -336,9 +339,9 @@
   }
 
   function finishCover(openStory) {
-    if (openStory) enterStory();
+    var screen = currentScreen();
+    if (openStory && screen === "cover") enterStory();
     resetCoverMotion();
-    coverOpening = false;
   }
 
   function armCoverLock() {
@@ -371,6 +374,7 @@
     coverOpening = true;
     coverOpenedAt = Date.now();
     armCoverLock();
+    warmupAlbum();
     try {
       var els = coverEls();
       var book = els.book;
@@ -386,7 +390,6 @@
       if (book) book.classList.add("is-opening");
       var start = performance.now();
       var duration = 2100;
-      var opened = false;
       function easeCover(t) {
         if (t < 0.12) return (t / 0.12) * (t / 0.12) * 0.04;
         var u = (t - 0.12) / 0.88;
@@ -414,14 +417,10 @@
               "deg)";
           }
           if (leaf) leaf.style.filter = "brightness(" + (0.88 + p * 0.16) + ")";
-          if (!opened && t > 0.72) {
-            opened = true;
-            enterStory();
-          }
           if (t < 1) {
             coverRaf = window.requestAnimationFrame(tick);
           } else {
-            finishCover(!opened);
+            finishCover(true);
           }
         } catch (err) {
           finishCover(true);
@@ -440,14 +439,23 @@
     function onCoverIntent(e) {
       var el = e.target;
       if (el && el.nodeType === 3) el = el.parentElement;
-      if (el && el.closest && el.closest("#btn-see-us, .story-actions")) return;
+      if (!el || !el.closest) return;
+      if (el.closest("#btn-see-us, .story-actions, .nav-pills, .lang-toggle, .like-btn, #password-gate")) return;
+      if (currentScreen() !== "cover") return;
       if (e.type === "pointerup" && e.pointerType === "mouse") return;
-      var storyBtn = el && el.closest && el.closest("[data-action=open-story]");
+      var storyBtn = el.closest("[data-action=open-story]");
       if (!storyBtn) return;
-      coverOpening = false;
-      resetCoverMotion();
-      var api = album();
-      if (api) api.open("story");
+      if (coverOpening) {
+        if (Date.now() - coverOpenedAt > 2500) {
+          finishCover(true);
+        }
+        if (e.cancelable) e.preventDefault();
+        e.stopImmediatePropagation();
+        return;
+      }
+      playCoverReveal();
+      if (e.cancelable) e.preventDefault();
+      e.stopImmediatePropagation();
     }
 
     document.addEventListener("pointerup", onCoverIntent, true);
@@ -645,6 +653,8 @@
       }, 30);
     }
   });
+
+  window.ClaireCoverReset = resetCoverMotion;
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);

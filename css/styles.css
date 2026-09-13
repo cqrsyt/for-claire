@@ -432,11 +432,6 @@ html[data-screen="story"] #site-footer {
 
 #btn-see-us {
   display: none;
-  position: fixed;
-  left: 50%;
-  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
-  transform: translateX(-50%);
-  z-index: 2147483000;
   pointer-events: auto !important;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -460,7 +455,7 @@ html[data-screen="story"] #btn-see-us {
 
 html[data-screen="story"] #btn-see-us:hover,
 html[data-screen="story"] #btn-see-us:focus-visible {
-  transform: translateX(-50%) translateY(-2px);
+  transform: translateY(-2px);
 }
 
 html[data-screen="story"] #view-cover,
@@ -484,16 +479,11 @@ html[data-screen="story"] #ambient-petals *,
 html[data-screen="story"] #claire-burst,
 html[data-screen="story"] #claire-burst *,
 html[data-screen="story"] #xuan-paper,
-html[data-screen="story"] #xuan-paper *,
-#view-story.active ~ #view-album #album-controls,
-#view-story.active ~ #view-album #album-controls *,
-#view-story.active ~ #view-album #book-stage,
-#view-story.active ~ #view-album #book-stage * {
+html[data-screen="story"] #xuan-paper * {
   pointer-events: none !important;
 }
 
-html[data-screen="story"] #album-controls,
-#view-story.active ~ #view-album #album-controls {
+html[data-screen="story"] #album-controls {
   display: none !important;
   visibility: hidden !important;
 }
@@ -986,30 +976,9 @@ button {
   opacity: 0.85;
 }
 
-#btn-see-us {
-  position: fixed !important;
-  left: 50%;
-  bottom: 24px;
-  transform: translateX(-50%);
-  z-index: 2147483647 !important;
-  pointer-events: auto !important;
-  display: none;
-}
-html[data-screen="story"] #btn-see-us {
-  display: flex !important;
-}
-
-#btn-see-us {
-  position: fixed !important;
-  left: 50%;
-  bottom: 24px;
-  transform: translateX(-50%);
-  z-index: 2147483647 !important;
-  pointer-events: auto !important;
-}
 html:not([data-screen="story"]) #btn-see-us {
   display: none !important;
 }
 html[data-screen="story"] #btn-see-us {
-  display: flex !important;
+  display: inline-flex !important;
 }
