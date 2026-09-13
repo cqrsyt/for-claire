@@ -1,0 +1,29 @@
+/* Decorations never steal taps. Controls always receive them. */
+#ambient-petals,
+#ambient-petals *,
+#xuan-paper,
+#xuan-paper *,
+#claire-burst,
+#claire-burst *,
+.book-sketches,
+.book-sketches *,
+.cover-book-spine,
+.cover-book-leaf,
+.cover-book-pages,
+.cover-sketch,
+.cover-frame-back {
+  pointer-events: none !important;
+}
+
+.nav-pills,
+.nav-pills button,
+.lang-toggle,
+.lang-toggle button,
+.like-btn,
+#btn-see-us,
+.cover-open,
+[data-action="open-story"],
+#album-controls,
+#album-controls .ctrl-btn {
+  pointer-events: auto !important;
+}
