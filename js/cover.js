@@ -6,10 +6,10 @@
     opening = true;
     var book = document.querySelector(".cover-book-3d");
     if (book) book.classList.add("is-opening");
+    if (window.ClaireAlbum && window.ClaireAlbum.open) window.ClaireAlbum.open("story");
     window.setTimeout(function () {
       opening = false;
-      if (window.ClaireAlbum && window.ClaireAlbum.open) window.ClaireAlbum.open("story");
-    }, 700);
+    }, 800);
   }
 
   function isCover() {
@@ -21,9 +21,13 @@
     function (e) {
       var el = e.target;
       if (!el || !el.closest) return;
+      if (el.closest("#btn-open-story, [data-action=open-story]")) {
+        goStory();
+        return;
+      }
       if (!isCover()) return;
       if (el.closest(".nav-pills, .lang-toggle, .like-btn, #password-gate")) return;
-      if (el.closest("[data-action=open-story], #view-cover")) goStory();
+      if (el.closest("#view-cover")) goStory();
     },
     true
   );

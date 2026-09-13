@@ -21,6 +21,7 @@
 .lang-toggle button,
 .like-btn,
 #btn-see-us,
+#btn-open-story,
 .cover-open,
 [data-action="open-story"],
 #album-controls,
@@ -31,6 +32,17 @@
   pointer-events: auto !important;
 }
 
-#view-cover {
-  cursor: pointer;
+#btn-open-story {
+  display: none;
+}
+
+html[data-screen="cover"] #btn-open-story {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  position: fixed !important;
+  left: 50%;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 500 !important;
 }
