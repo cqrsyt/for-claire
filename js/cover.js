@@ -1,24 +1,30 @@
 (function () {
-  function openCover() {
-    var btn = document.querySelector("#view-cover [data-action=open-story]");
-    if (btn) {
-      btn.click();
-      return;
-    }
-    if (window.ClaireAlbum) window.ClaireAlbum.open("story");
+  var opening = false;
+
+  function goStory() {
+    if (opening) return;
+    opening = true;
+    var book = document.querySelector(".cover-book-3d");
+    if (book) book.classList.add("is-opening");
+    window.setTimeout(function () {
+      opening = false;
+      if (window.ClaireAlbum && window.ClaireAlbum.open) window.ClaireAlbum.open("story");
+    }, 700);
   }
 
-  function bind() {
-    var view = document.getElementById("view-cover");
-    if (!view || view._coverTap) return;
-    view._coverTap = true;
-    view.addEventListener("click", function (e) {
-      if (e.target.closest && e.target.closest(".nav-pills, .lang-toggle, .like-btn")) return;
-      if (document.documentElement.getAttribute("data-screen") !== "cover") return;
-      openCover();
-    });
+  function isCover() {
+    return document.documentElement.getAttribute("data-screen") === "cover";
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind);
-  else bind();
+  document.addEventListener(
+    "click",
+    function (e) {
+      var el = e.target;
+      if (!el || !el.closest) return;
+      if (!isCover()) return;
+      if (el.closest(".nav-pills, .lang-toggle, .like-btn, #password-gate")) return;
+      if (el.closest("[data-action=open-story], #view-cover")) goStory();
+    },
+    true
+  );
 })();
