@@ -443,7 +443,7 @@
       if (el.closest("#btn-see-us, .story-actions, .nav-pills, .lang-toggle, .like-btn, #password-gate")) return;
       if (currentScreen() !== "cover") return;
       if (e.type === "pointerup" && e.pointerType === "mouse") return;
-      var storyBtn = el.closest("[data-action=open-story]");
+      var storyBtn = el.closest("[data-action=open-story], #view-cover .cover-frame, #view-cover .cover-book-3d");
       if (!storyBtn) return;
       if (coverOpening) {
         if (Date.now() - coverOpenedAt > 2500) {

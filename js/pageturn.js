@@ -615,7 +615,19 @@
       ignoreClick = false;
       return;
     }
-    if (isPhotoHotspot(e.target)) return;
+    if (isPhotoHotspot(e.target)) {
+      var pageBox = document.getElementById("book-page");
+      if (pageBox) {
+        var pr = pageBox.getBoundingClientRect();
+        var edge = Math.max(56, pr.width * 0.22);
+        if (e.clientX <= pr.left + edge || e.clientX >= pr.right - edge) {
+          turnFromPoint(e.clientX);
+          if (e.cancelable) e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+      }
+      return;
+    }
     if (!isPaper(e.target)) return;
     turnFromPoint(e.clientX);
   }

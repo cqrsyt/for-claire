@@ -102,7 +102,7 @@
   transform-origin: left center;
   transform-style: preserve-3d;
   border-radius: 0 10px 10px 2px;
-  overflow: visible;
+  overflow: visible !important;
 }
 
 .cover-book-3d .cover-frame > *:not(.cover-frame-back) {
@@ -960,12 +960,6 @@ html[data-screen="album"] #album-controls .ctrl-btn {
   pointer-events: auto !important;
 }
 
-#view-cover {
-  isolation: isolate;
-  position: relative;
-  z-index: 1;
-}
-
 #view-cover .cover-book-3d,
 #view-cover .cover-book-spine,
 #view-cover .cover-book-leaf,
@@ -974,9 +968,28 @@ html[data-screen="album"] #album-controls .ctrl-btn {
 #view-cover .cover-frame-back {
   pointer-events: none !important;
 }
+#view-cover .cover-frame,
 #view-cover .cover-open,
 #view-cover [data-action="open-story"] {
   pointer-events: auto !important;
   position: relative;
   z-index: 4;
+}
+
+.cover-book-3d.is-opening,
+.cover-book-3d.is-opening .cover-frame {
+  overflow: visible !important;
+  filter: none !important;
+}
+
+html[data-screen="album"] #book-stage,
+html[data-screen="album"] #book-3d,
+html[data-screen="album"] #book-page,
+html[data-screen="album"] #book-page * {
+  pointer-events: auto !important;
+}
+
+html[data-screen="album"] .book-sketches,
+html[data-screen="album"] .book-sketches * {
+  pointer-events: none !important;
 }
