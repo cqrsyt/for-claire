@@ -24,6 +24,13 @@
 .cover-open,
 [data-action="open-story"],
 #album-controls,
-#album-controls .ctrl-btn {
+#album-controls .ctrl-btn,
+#view-cover,
+#view-cover .cover-book-3d,
+#view-cover .cover-frame {
   pointer-events: auto !important;
+}
+
+#view-cover {
+  cursor: pointer;
 }
